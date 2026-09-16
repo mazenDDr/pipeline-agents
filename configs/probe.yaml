@@ -32,4 +32,25 @@ models:
     modes:
       think: {chat_template_kwargs: {enable_thinking: true}}
       no-think: {chat_template_kwargs: {enable_thinking: false}}
-  # Thinking controls for the families below are filled in after reading their chat templates.
+  # Gemma 4's template also reads enable_thinking (checked in the GGUF metadata, 2026-09-16).
+  - name: gemma-4-e4b
+    file: gemma-4-E4B-it-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: gemma-4-26b-a4b
+    file: gemma-4-26B-A4B-it-UD-IQ4_XS.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  # gpt-oss always reasons; its template takes an effort level instead of an on/off switch.
+  - name: gpt-oss-20b
+    file: gpt-oss-20b-F16.gguf
+    modes:
+      think: {chat_template_kwargs: {reasoning_effort: medium}}
+      no-think: {chat_template_kwargs: {reasoning_effort: low}}
+  # Devstral Small 2 has no thinking mode.
+  - name: devstral-small-2-24b
+    file: Devstral-Small-2-24B-Instruct-2512-Q4_K_M.gguf
+    modes:
+      default: {}

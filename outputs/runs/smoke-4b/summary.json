@@ -1,0 +1,33 @@
+{
+  "rows": [
+    {
+      "model": "qwen3.5-4b",
+      "mode": "think",
+      "load_s": null,
+      "vram_mib": null,
+      "rss_mib": null,
+      "ttft_6k_s": 1.49464349699997,
+      "prefill_tps": 4054.6351164321895,
+      "decode_tps": 94.59860513429292,
+      "plan_valid_prompt": 1.0,
+      "plan_sound_prompt": 1.0,
+      "plan_valid_enforced": 0.5,
+      "plan_sound_enforced": 0.5,
+      "n_plans": 5,
+      "code_pass": NaN,
+      "code_pass_ci": [
+        NaN,
+        NaN
+      ],
+      "n_code_tasks": 0,
+      "n_code_samples": 0,
+      "mean_call_s": 37.80514158279993,
+      "mean_completion_tokens": 3629.4,
+      "truncated": 1,
+      "call_errors": 0
+    }
+  ],
+  "code_matrix": {
+    "qwen3.5-4b|think": {}
+  }
+}
