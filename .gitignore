@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.env
+.env.*
+.DS_Store
+
+# live only on the GPU machine
+/data/
+/models/
+
+# outputs are pulled from the GPU machine; only small run summaries are committed
+outputs/*
+!outputs/runs/
+outputs/runs/*
+!outputs/runs/*/
+outputs/runs/*/*
+!outputs/runs/*/summary.json
+!outputs/runs/*/report.md

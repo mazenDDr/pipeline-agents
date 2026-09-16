@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Write code on the Mac, run it on gpu-box (over Tailscale) with the conda env "main".
+#   ./gpu push               copy code to gpu-box (data/ and outputs/ are never touched)
+#   ./gpu run train.py ARGS  push, then start it in a tmux session (non-.py commands run as-is)
+#   ./gpu status             is the session still running? + last log lines ("[exit N]" = finished)
+#   ./gpu logs               follow the log (Ctrl-C stops watching, not training)
+#   ./gpu attach             attach to the tmux session (detach: Ctrl-b then d)
+#   ./gpu stop               kill the session
+#   ./gpu pull               copy gpu-box outputs/ back to ./outputs
+#   ./gpu exec CMD...        push, then run a quick command in the project folder on gpu-box
+#   ./gpu smi                show GPU usage
+#   ./gpu shell              interactive shell on gpu-box in the project folder
+# Env overrides: GPU_SESSION (default "train"), GPU_REMOTE_DIR (default: this folder's name).
+set -euo pipefail
+
+HOST=gpu-box
+cd "$(dirname "$0")"
+REMOTE_DIR=${GPU_REMOTE_DIR:-$(basename "$PWD")}   # relative to ~ on gpu-box
+SESSION=${GPU_SESSION:-train}
+LOG=outputs/$SESSION.log
+# Expanded on gpu-box, not here: puts env "main" and WSL's nvidia-smi on PATH.
+ENV_SETUP='export PATH=$HOME/miniconda3/envs/main/bin:/usr/lib/wsl/lib:$PATH PYTHONUNBUFFERED=1 PYTHONPATH=src'
+
+push() {
+  ssh -n "$HOST" "mkdir -p $REMOTE_DIR"   # -n: don't eat stdin meant for `./gpu exec python - <<EOF`
+  rsync -az --delete --exclude-from=.rsyncignore ./ "$HOST:$REMOTE_DIR/"
+}
+
+quote_args() {
+  [[ "${1:-}" == *.py ]] && set -- python "$@"
+  printf '%q ' "$@"
+}
+
+case "${1:-}" in
+  push) push ;;
+  run)
+    shift
+    [ $# -gt 0 ] || { echo "usage: ./gpu run train.py [ARGS]"; exit 1; }
+    if ssh "$HOST" "tmux has-session -t $SESSION 2>/dev/null"; then
+      echo "session '$SESSION' is already running on $HOST: ./gpu status, ./gpu stop, or GPU_SESSION=other ./gpu run ..."
+      exit 1
+    fi
+    push
+    inner="$ENV_SETUP; $(quote_args "$@") 2>&1 | tee $LOG; echo \"[exit \${PIPESTATUS[0]}]\" >> $LOG"
+    ssh "$HOST" "cd $REMOTE_DIR && mkdir -p outputs && tmux new-session -d -s $SESSION -c ~/$REMOTE_DIR bash -c $(printf '%q' "$inner")"
+    echo "started on $HOST in tmux session '$SESSION', check with: ./gpu status   (log: $LOG)"
+    ;;
+  status)
+    ssh "$HOST" "tmux has-session -t $SESSION 2>/dev/null && echo 'RUNNING ($SESSION)' || echo 'NOT RUNNING ($SESSION)'; \
+      tail -n ${2:-15} $REMOTE_DIR/$LOG 2>/dev/null || echo '(no log yet)'"
+    ;;
+  logs)   ssh "$HOST" "tail -n 50 -f $REMOTE_DIR/$LOG" ;;
+  attach) ssh -t "$HOST" "tmux attach -t $SESSION" ;;
+  stop)   ssh "$HOST" "tmux kill-session -t $SESSION" ;;
+  pull)   rsync -az "$HOST:$REMOTE_DIR/outputs/" ./outputs/ ;;
+  exec)
+    shift
+    push
+    ssh "$HOST" "cd $REMOTE_DIR && $ENV_SETUP && $(quote_args "$@")"
+    ;;
+  smi)    ssh "$HOST" /usr/lib/wsl/lib/nvidia-smi ;;
+  shell)  ssh -t "$HOST" "cd $REMOTE_DIR && exec bash -l" ;;
+  *)      sed -n '2,13p' "$0"; exit 1 ;;
+esac

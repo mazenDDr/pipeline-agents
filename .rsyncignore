@@ -1,0 +1,16 @@
+# Never pushed to gpu-box, and never deleted there by `rsync --delete`.
+# A leading "/" anchors to the project root, so src/receipt_vlm/data/ is still pushed.
+/data/
+/outputs/
+/models/
+/wandb/
+__pycache__/
+*.pyc
+.git/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
