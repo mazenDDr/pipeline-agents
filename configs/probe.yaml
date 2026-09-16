@@ -1,0 +1,35 @@
+# T1 model probe. Every model runs in llama-server with the same context, slots and sampling, so the
+# rows differ only in the model and its thinking mode. Sampling is one shared setting, not each model
+# card's recommendation (a stated limitation of the comparison).
+server_binary: /home/mazen/llama.cpp/build-cuda/bin/llama-server  # the CUDA build; ~/llama.cpp/build is CPU-only
+model_dir: models/gguf
+port: 8081
+server_args: ["-c", "16384", "-np", "1", "-ngl", "99", "-fa", "on", "--fit", "on", "--jinja",
+              "--reasoning-format", "deepseek", "--metrics"]
+sampling: {temperature: 0.6, top_p: 0.95, top_k: 20, max_tokens: 8192}
+speed_repeats: 3
+data_seed: 7
+code_timeout_s: 120
+
+models:
+  - name: qwen3.5-4b
+    file: Qwen3.5-4B-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.5-9b
+    file: Qwen3.5-9B-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.6-35b-a3b
+    file: Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.6-27b
+    file: Qwen3.6-27B-IQ4_XS.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  # Thinking controls for the families below are filled in after reading their chat templates.

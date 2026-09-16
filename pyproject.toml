@@ -10,6 +10,7 @@ dependencies = [
   "numpy>=1.26",
   "pandas>=2.2",
   "scikit-learn>=1.5",
+  "openai>=1.40",
 ]
 
 [project.optional-dependencies]
