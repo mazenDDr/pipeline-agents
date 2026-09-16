@@ -4,7 +4,7 @@
 server_binary: /home/mazen/llama.cpp/build-cuda/bin/llama-server  # the CUDA build; ~/llama.cpp/build is CPU-only
 model_dir: models/gguf
 port: 8081
-server_args: ["-c", "16384", "-np", "1", "-ngl", "99", "-fa", "on", "--fit", "on", "--jinja",
+server_args: ["-c", "16384", "-np", "1", "-fa", "on", "--fit", "on", "--jinja",
               "--reasoning-format", "deepseek", "--metrics"]
 sampling: {temperature: 0.6, top_p: 0.95, top_k: 20, max_tokens: 8192}
 speed_repeats: 3
