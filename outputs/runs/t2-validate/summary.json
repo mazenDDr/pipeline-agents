@@ -1,0 +1,454 @@
+{
+  "solutions": 56,
+  "as_expected": 56,
+  "rows": [
+    {
+      "task": "bike-1-forecast",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 45.1956908744819,
+      "validation_metric": 49.27511355978211
+    },
+    {
+      "task": "bike-1-forecast",
+      "variant": "honest_forest",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 50.0191897556764,
+      "validation_metric": 50.17665531647125
+    },
+    {
+      "task": "bike-1-forecast",
+      "variant": "broken_leak",
+      "expected": "predict",
+      "got": "predict",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bike-1-forecast",
+      "variant": "broken_random_split",
+      "expected": "honest_estimate",
+      "got": "honest_estimate",
+      "holdout_metric": 45.1956908744819,
+      "validation_metric": 23.656128444911904
+    },
+    {
+      "task": "bike-1-forecast",
+      "variant": "broken_mean",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 140.15891000415633,
+      "validation_metric": 142.60868597838783
+    },
+    {
+      "task": "bike-2-weather",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bike-2-weather",
+      "variant": "broken_all_days",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bike-2-weather",
+      "variant": "broken_normalized_temp",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bike-2-weather",
+      "variant": "broken_shifted_codes",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "adult-1-income",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.9278618551255922,
+      "validation_metric": 0.9271945694057493
+    },
+    {
+      "task": "adult-1-income",
+      "variant": "honest_logistic",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.9049859790933655,
+      "validation_metric": 0.9066655037052336
+    },
+    {
+      "task": "adult-1-income",
+      "variant": "broken_header",
+      "expected": "coverage",
+      "got": "coverage",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "adult-1-income",
+      "variant": "broken_numeric_only",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 0.8753675012300051,
+      "validation_metric": 0.875536671786232
+    },
+    {
+      "task": "adult-2-education",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "adult-2-education",
+      "variant": "honest_dedup",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "adult-2-education",
+      "variant": "broken_unstripped",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "adult-2-education",
+      "variant": "broken_include_unknown",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-1-co-daily",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-1-co-daily",
+      "variant": "broken_sentinel",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-1-co-daily",
+      "variant": "broken_month_first",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-1-co-daily",
+      "variant": "broken_no_decimal",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.3657386719878731,
+      "validation_metric": 0.5732586643397031
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "honest_linear",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.3841344674087931,
+      "validation_metric": 0.5224006871696018
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "broken_analyzer_columns",
+      "expected": "predict",
+      "got": "predict",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "broken_keep_minus200",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 39.625653406508604,
+      "validation_metric": 42.26595607160256
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "broken_no_decimal",
+      "expected": "clean_rerun",
+      "got": "clean_rerun",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "broken_mean",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 1.0732604664694418,
+      "validation_metric": 1.1354166889814385
+    },
+    {
+      "task": "air-2-co-estimate",
+      "variant": "uncaught_random_split",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.3657386719878731,
+      "validation_metric": 0.26392258728387197
+    },
+    {
+      "task": "bank-1-subscribe",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.8109197367800367,
+      "validation_metric": 0.8004636195555443
+    },
+    {
+      "task": "bank-1-subscribe",
+      "variant": "honest_logistic",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.807050303080334,
+      "validation_metric": 0.7867737715073135
+    },
+    {
+      "task": "bank-1-subscribe",
+      "variant": "broken_duration",
+      "expected": "predict",
+      "got": "predict",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bank-1-subscribe",
+      "variant": "broken_rate_linear",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 0.7577393833435541,
+      "validation_metric": 0.7399845629548335
+    },
+    {
+      "task": "bank-2-previous-campaign",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bank-2-previous-campaign",
+      "variant": "broken_include_999",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "diabetes-1-readmit",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.6850552968043085,
+      "validation_metric": 0.6719524655424902
+    },
+    {
+      "task": "diabetes-1-readmit",
+      "variant": "honest_logistic",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.678245437560537,
+      "validation_metric": 0.6660144105983684
+    },
+    {
+      "task": "diabetes-1-readmit",
+      "variant": "broken_any_readmission",
+      "expected": "score",
+      "got": "score+honest_estimate",
+      "holdout_metric": 0.6526687269210231,
+      "validation_metric": 0.6998111935609556
+    },
+    {
+      "task": "diabetes-1-readmit",
+      "variant": "broken_numeric_only",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 0.6419327825853258,
+      "validation_metric": 0.6262305050164917
+    },
+    {
+      "task": "diabetes-2-age-rates",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "diabetes-2-age-rates",
+      "variant": "broken_encounters",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "diabetes-2-age-rates",
+      "variant": "broken_any_readmission",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "credit-1-default",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.7850179428682561,
+      "validation_metric": 0.7785257569846842
+    },
+    {
+      "task": "credit-1-default",
+      "variant": "honest_logistic",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.776400641115059,
+      "validation_metric": 0.7678893189423275
+    },
+    {
+      "task": "credit-1-default",
+      "variant": "broken_first_header",
+      "expected": "clean_rerun",
+      "got": "clean_rerun",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "credit-1-default",
+      "variant": "broken_numeric_logistic",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 0.7270956097745052,
+      "validation_metric": 0.7217649302723468
+    },
+    {
+      "task": "credit-2-education",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "credit-2-education",
+      "variant": "broken_fold_into_others",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "credit-2-education",
+      "variant": "broken_first_header",
+      "expected": "clean_rerun",
+      "got": "clean_rerun",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "retail-1-monthly-revenue",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "retail-1-monthly-revenue",
+      "variant": "broken_day_first",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "retail-1-monthly-revenue",
+      "variant": "broken_drop_negative",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "retail-1-monthly-revenue",
+      "variant": "broken_cancelled_lines",
+      "expected": "answer",
+      "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "retail-2-repeat-buyers",
+      "variant": "reference",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.7183015790994971,
+      "validation_metric": 0.7112438297843376
+    },
+    {
+      "task": "retail-2-repeat-buyers",
+      "variant": "honest_logistic",
+      "expected": "pass",
+      "got": "pass",
+      "holdout_metric": 0.7392574883587522,
+      "validation_metric": 0.7515996277075881
+    },
+    {
+      "task": "retail-2-repeat-buyers",
+      "variant": "broken_label_window",
+      "expected": "honest_estimate",
+      "got": "score+honest_estimate",
+      "holdout_metric": 0.6403745232799082,
+      "validation_metric": 1.0
+    },
+    {
+      "task": "retail-2-repeat-buyers",
+      "variant": "broken_recency_only",
+      "expected": "score",
+      "got": "score",
+      "holdout_metric": 0.6658640322960998,
+      "validation_metric": 0.6408972509675303
+    }
+  ]
+}

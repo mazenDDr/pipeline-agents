@@ -1,0 +1,6 @@
+# variant: pass, or the checker stage where it must fail
+reference: pass
+honest_forest: pass
+broken_leak: predict
+broken_random_split: honest_estimate
+broken_mean: score
