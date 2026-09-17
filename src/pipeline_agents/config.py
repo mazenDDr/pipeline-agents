@@ -46,6 +46,9 @@ class RunConfig(BaseModel):
     layout: str = "tiered"
     model_host: str = "127.0.0.1"  # the GPU machine's address as seen from where the run executes
     roles: dict[str, RoleConfig] = {}
+    seed: int | None = (
+        None  # None: unseeded sampling; set by the grid runner so repeats differ but replay exactly
+    )
     budget_usd: float = 0.05
     degrade_at: float = 0.7
     loop: LoopConfig = LoopConfig()

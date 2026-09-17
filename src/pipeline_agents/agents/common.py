@@ -87,6 +87,10 @@ def call_role(
     role_cfg = deps.config.role(role)
     prompt = render(deps.registry, role, context, role_cfg.system_version, role_cfg.user_version)
     params: dict = {"temperature": role_cfg.temperature, "max_tokens": role_cfg.max_tokens}
+    if deps.config.seed is not None:
+        # One seed per call, from the run seed and how many calls came before: repeats of a run with another
+        # seed sample differently, and a replay of the same run hits the same cache entries.
+        params["seed"] = deps.config.seed * 1_000_003 + deps.observer.ledger.total.calls
     if schema is not None:
         params["response_format"] = {"type": "json_schema", "json_schema": {"name": role, "schema": schema}}
     completion = deps.observer.call(

@@ -1,0 +1,8 @@
+# First measurement on the dev split: the multi-agent system against the single-agent baseline, no memory.
+name: t9-dev
+tasks: dev
+seeds: [1, 2, 3]
+memory: none
+arms:
+  - {label: multi, system: multi, config: configs/run/default.yaml}
+  - {label: baseline, system: baseline, config: configs/run/default.yaml}
