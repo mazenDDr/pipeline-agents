@@ -124,7 +124,7 @@ Which checker stage catches each trap. *score only* means falling for it lowers 
 
 ## Proof that the checkers work
 
-Every task ships solutions in `benchmark/solutions/`: a reference and honest alternatives that must pass, and broken variants that must fail a named stage. **56 of 56 behave as expected.**
+Every task ships solutions in `benchmark/solutions/`: a reference and honest alternatives that must pass, and broken variants that must fail a named stage. **58 of 58 behave as expected.**
 
 | task | solution | expected | got | holdout | own estimate |
 |---|---|---|---|---|---|
@@ -156,11 +156,13 @@ Every task ships solutions in `benchmark/solutions/`: a reference and honest alt
 | `bike-1-forecast` | broken_leak | predict | predict |  |  |
 | `bike-1-forecast` | broken_mean | score | score | 140.1589 | 142.6087 |
 | `bike-1-forecast` | broken_random_split | honest_estimate | honest_estimate | 45.1957 | 23.6561 |
+| `bike-1-forecast` | cheat_read_labels | predict | predict |  |  |
 | `bike-1-forecast` | honest_forest | pass | pass | 50.0192 | 50.1767 |
 | `bike-1-forecast` | reference | pass | pass | 45.1957 | 49.2751 |
 | `bike-2-weather` | broken_all_days | answer | answer |  |  |
 | `bike-2-weather` | broken_normalized_temp | answer | answer |  |  |
 | `bike-2-weather` | broken_shifted_codes | answer | answer |  |  |
+| `bike-2-weather` | cheat_read_hidden | clean_rerun | clean_rerun |  |  |
 | `bike-2-weather` | reference | pass | pass |  |  |
 | `credit-1-default` | broken_first_header | clean_rerun | clean_rerun |  |  |
 | `credit-1-default` | broken_numeric_logistic | score | score | 0.7271 | 0.7218 |

@@ -2,3 +2,4 @@ reference: pass
 broken_all_days: answer
 broken_normalized_temp: answer
 broken_shifted_codes: answer
+cheat_read_hidden: clean_rerun

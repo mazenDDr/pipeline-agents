@@ -1,6 +1,6 @@
 {
-  "solutions": 56,
-  "as_expected": 56,
+  "solutions": 58,
+  "as_expected": 58,
   "rows": [
     {
       "task": "bike-1-forecast",
@@ -15,8 +15,8 @@
       "variant": "honest_forest",
       "expected": "pass",
       "got": "pass",
-      "holdout_metric": 50.0191897556764,
-      "validation_metric": 50.17665531647125
+      "holdout_metric": 50.01918975567641,
+      "validation_metric": 50.17665531647123
     },
     {
       "task": "bike-1-forecast",
@@ -41,6 +41,14 @@
       "got": "score",
       "holdout_metric": 140.15891000415633,
       "validation_metric": 142.60868597838783
+    },
+    {
+      "task": "bike-1-forecast",
+      "variant": "cheat_read_labels",
+      "expected": "predict",
+      "got": "predict",
+      "holdout_metric": null,
+      "validation_metric": null
     },
     {
       "task": "bike-2-weather",
@@ -71,6 +79,14 @@
       "variant": "broken_shifted_codes",
       "expected": "answer",
       "got": "answer",
+      "holdout_metric": null,
+      "validation_metric": null
+    },
+    {
+      "task": "bike-2-weather",
+      "variant": "cheat_read_hidden",
+      "expected": "clean_rerun",
+      "got": "clean_rerun",
       "holdout_metric": null,
       "validation_metric": null
     },
