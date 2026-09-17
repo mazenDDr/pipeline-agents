@@ -151,6 +151,17 @@ def output_tail(result, limit: int = 600) -> str:
     return " | ".join(p for p in parts if p) or "no output at all"
 
 
+def _smoke_ids(features: Path, id_column: str | None) -> set[str] | None:
+    """The id values in the smoke input, when the file can be read with an ordinary header; None otherwise."""
+    if not id_column:
+        return None
+    profile = profile_file(features)
+    if profile.header_rows != 1:
+        return None
+    frame = pd.read_csv(features, sep=profile.separator, dtype=str, keep_default_na=False)
+    return set(frame[id_column].str.strip()) if id_column in frame.columns else None
+
+
 def deliver_checks(state: RunState, runner, target_column: str | None = None) -> list[Finding]:
     """`target_column` defaults to the plan's; the single-agent baseline has no plan and passes its own."""
     workspace = Path(state.workspace)
@@ -230,13 +241,32 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
             return findings
         frame = _read_table(predictions)
         needed = {state.task.id_column or "", "prediction"} - {""}
-        ok = frame is not None and needed <= set(frame.columns) and len(frame) > 0
+        problems = []
+        if frame is None or not needed <= set(frame.columns) or len(frame) == 0:
+            columns = [] if frame is None else list(frame.columns)
+            problems.append(
+                f"predict.py wrote {0 if frame is None else len(frame)} rows with columns {columns}; "
+                f"need {sorted(needed)}"
+            )
+        else:
+            expected = _smoke_ids(features, state.task.id_column)
+            if expected is not None and set(frame[state.task.id_column].astype(str)) != expected:
+                shown = frame[state.task.id_column].astype(str).head(3).tolist()
+                problems.append(
+                    f"the ids in the predictions ({shown}...) are not the ids in the input file: read with "
+                    "the wrong separator or header, or row numbers used instead of the id column?"
+                )
+            values = pd.to_numeric(frame["prediction"], errors="coerce")
+            if len(frame) > 20 and values.nunique() <= 1:
+                problems.append(
+                    f"all {len(frame)} predictions are identical ({values.iloc[0]}): the features did not "
+                    "reach the model (parsing, column names, or a zero-filled reindex)"
+                )
         findings.append(
             Finding(
                 tool="predict_smoke",
-                passed=ok,
-                detail=f"predict.py wrote {0 if frame is None else len(frame)} rows with columns "
-                f"{[] if frame is None else list(frame.columns)}; need {sorted(needed)}",
+                passed=not problems,
+                detail="; ".join(problems) if problems else f"{len(frame)} varied predictions, one per id",
             )
         )
     return findings

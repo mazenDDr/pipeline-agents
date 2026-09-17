@@ -56,7 +56,9 @@ import json, sys, pandas as pd
 X = pd.read_csv(sys.argv[1])
 assert "amount" not in X.columns, "features must not contain the target"
 mean = json.load(open("output/model.json"))["mean"]
-pd.DataFrame({"order_id": X["order_id"], "prediction": mean}).to_csv(sys.argv[2], index=False)
+pd.DataFrame({"order_id": X["order_id"], "prediction": mean + 0.01 * X["order_id"]}).to_csv(
+    sys.argv[2], index=False
+)
 ```
 
 SELF-CHECK:

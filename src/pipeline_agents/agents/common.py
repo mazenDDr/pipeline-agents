@@ -42,6 +42,7 @@ class Deps:
     registry: PromptRegistry
     config: RunConfig
     runner: Any  # a sandbox runner (LinuxSandbox or UnsandboxedRunner)
+    memory: Any = None  # a MemorySystem, or None when every memory is off
 
 
 @dataclass
@@ -80,10 +81,14 @@ def call_role(
     stakes: Stakes,
     step_id: str | None,
     iteration: int,
+    schema: dict | None = None,
 ) -> RoleReply:
+    """`schema`, when given, makes the server constrain the reply to that JSON schema."""
     role_cfg = deps.config.role(role)
     prompt = render(deps.registry, role, context, role_cfg.system_version, role_cfg.user_version)
-    params = {"temperature": role_cfg.temperature, "max_tokens": role_cfg.max_tokens}
+    params: dict = {"temperature": role_cfg.temperature, "max_tokens": role_cfg.max_tokens}
+    if schema is not None:
+        params["response_format"] = {"type": "json_schema", "json_schema": {"name": role, "schema": schema}}
     completion = deps.observer.call(
         prompt, role_cfg.tier, stakes, params, step_id=step_id, iteration=iteration
     )

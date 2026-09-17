@@ -26,6 +26,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, StateGraph
 
@@ -37,6 +38,20 @@ from pipeline_agents.schemas import RunState, StepRecord, Verdict
 from pipeline_agents.tools.profile import profile_dir, profile_file
 
 HUMAN = "human"
+SCHEMA_TYPES = [
+    "RunState",
+    "TaskContext",
+    "Plan",
+    "PlanStep",
+    "StepRecord",
+    "StepAttempt",
+    "Verdict",
+    "Finding",
+    "Revision",
+    "MemoryHit",
+    "Ledger",
+    "Spend",
+]
 
 
 def _stop(status: str, reason: str) -> dict[str, Any]:
@@ -94,9 +109,14 @@ def build_graph(deps: Deps, checkpointer: SqliteSaver | None = None):
             and not p.name.lower().startswith("readme")
             and p.suffix.lower() in {".csv", ".data", ".txt", ".tsv"}
         ]
+        profile = state.dataset_profile or profile_dir(data)
+        hits = []
+        if deps.memory is not None:
+            hits = deps.memory.run_hits(state.task_id, Path(state.workspace), state.goal, profile)
         return {
-            "dataset_profile": state.dataset_profile or profile_dir(data),
+            "dataset_profile": profile,
             "raw_rows": {p.name: profile_file(p).rows for p in files},
+            "memory_hits": hits,
         }
 
     @node("plan", deps)
@@ -132,6 +152,10 @@ def build_graph(deps: Deps, checkpointer: SqliteSaver | None = None):
     @node("execute", deps)
     def execute(deps: Deps, state: RunState) -> dict:
         step = state.current_step
+        hits = list(state.memory_hits)
+        if deps.memory is not None and not any(h.step_id == step.id for h in hits):
+            hits += deps.memory.step_hits(step)  # retrieved once per step, kept for its later attempts
+            state = state.model_copy(update={"memory_hits": hits})
         try:
             attempt = roles.execute(deps, state)
         except ParseError as e:
@@ -144,6 +168,7 @@ def build_graph(deps: Deps, checkpointer: SqliteSaver | None = None):
             reason = f"infra: {step.id} failed {state.infra_retries + 1} times ({attempt.stderr[-200:]})"
             return {"steps": {**state.steps, step.id: record}, **_stop("failed", reason)}
         return {
+            "memory_hits": hits,
             "steps": {**state.steps, step.id: record},
             "pending_revision": None if not infra else state.pending_revision,
             "infra_retries": state.infra_retries + 1 if infra else 0,
@@ -337,8 +362,12 @@ def route_after_deliver(state: RunState) -> str:
 
 
 def open_checkpointer(path: Path) -> SqliteSaver:
+    """Our pydantic state types are listed explicitly: LangGraph warns that unregistered types will be refused
+    when a checkpoint is read back, which would make runs impossible to resume."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    return SqliteSaver(sqlite3.connect(str(path), check_same_thread=False))
+    allowed = [("pipeline_agents.schemas", name) for name in SCHEMA_TYPES]
+    serde = JsonPlusSerializer(allowed_msgpack_modules=allowed)
+    return SqliteSaver(sqlite3.connect(str(path), check_same_thread=False), serde=serde)
 
 
 def run(deps: Deps, state: RunState | None, db_path: Path, recursion_limit: int = 1000) -> RunState:
@@ -354,3 +383,12 @@ def run(deps: Deps, state: RunState | None, db_path: Path, recursion_limit: int 
         deps.observer.ledger = RunState.model_validate(saved).ledger.model_copy(deep=True)
     result = graph.invoke(state, config)
     return RunState.model_validate(result)
+
+
+def load_state(db_path: Path, run_id: str) -> RunState:
+    """The last checkpointed state of a run, without running anything."""
+    saver = open_checkpointer(db_path)
+    checkpoint = saver.get_tuple({"configurable": {"thread_id": run_id}})
+    if checkpoint is None:
+        raise FileNotFoundError(f"no checkpoint for {run_id} in {db_path}")
+    return RunState.model_validate(checkpoint.checkpoint["channel_values"])

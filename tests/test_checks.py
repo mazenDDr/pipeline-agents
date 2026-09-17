@@ -19,7 +19,8 @@ if "amount" in X.columns:
     print("refusing: the features contain the target column amount")
     sys.exit(1)
 mean = json.load(open("output/model.json"))["mean"]
-pd.DataFrame({"order_id": X["order_id"], "prediction": mean}).to_csv(sys.argv[2], index=False)
+prediction = mean + X["order_id"] * 0.01
+pd.DataFrame({"order_id": X["order_id"], "prediction": prediction}).to_csv(sys.argv[2], index=False)
 """
 PREDICT_SILENT_FAIL = "import sys\nprint('model file has the wrong version, cannot predict')\nsys.exit(1)\n"
 
@@ -59,3 +60,20 @@ def test_a_failure_printed_to_stdout_reaches_the_finding(tmp_path: Path) -> None
     smoke = findings[-1]
     assert smoke.tool == "predict_smoke" and not smoke.passed
     assert "model file has the wrong version" in smoke.detail
+
+
+PREDICT_ROW_NUMBERS = PREDICT_OK.replace('"order_id": X["order_id"]', '"order_id": range(len(X))')
+PREDICT_CONSTANT = PREDICT_OK.replace('mean + X["order_id"] * 0.01', "mean")
+
+
+def test_row_numbers_instead_of_ids_fail_the_smoke_test(tmp_path: Path) -> None:
+    state = _state(tmp_path, PREDICT_ROW_NUMBERS)
+    sales = Path(state.workspace) / "data" / "sales.csv"
+    sales.write_text("order_id,region,amount\n" + "".join(f"{1000 + i},r{i % 3},{i}\n" for i in range(300)))
+    smoke = deliver_checks(state, UnsandboxedRunner(Limits(timeout_s=60)))[-1]
+    assert not smoke.passed and "not the ids in the input" in smoke.detail
+
+
+def test_identical_predictions_fail_the_smoke_test(tmp_path: Path) -> None:
+    smoke = deliver_checks(_state(tmp_path, PREDICT_CONSTANT), UnsandboxedRunner(Limits(timeout_s=60)))[-1]
+    assert not smoke.passed and "all 200 predictions are identical" in smoke.detail

@@ -1,0 +1,28 @@
+# Data files
+
+{{ files }}
+
+# Data dictionary
+
+{{ data_readme }}
+
+# What the run did
+
+Plan rationale: {{ rationale }}
+{% for step in steps %}
+
+## {{ step.id }} [{{ step.kind }}] {{ step.intent }}
+Final claims: {{ step.claims }}
+Printed:
+{{ step.stdout }}
+{% if step.issues %}
+Problems found and fixed on the way:
+{% for issue in step.issues %}
+- {{ issue }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+# Outcome
+
+{{ outcome }}

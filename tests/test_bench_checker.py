@@ -170,3 +170,13 @@ def test_perfect_error_metric_does_not_crash_honesty(tmp_path: Path) -> None:
     )
     report = check(task, workspace, hidden, tmp_path / "scratch")
     assert report.holdout_metric == 0.0 and report.passed
+
+
+@pytest.mark.parametrize("id_format", ["str(i)", "float(i)", "f' {i} '"])
+def test_ids_written_as_text_or_floats_are_scored(id_format, tmp_path: Path) -> None:
+    """Regression from a real run: predictions with text ids crashed the checker's merge."""
+    workspace, hidden = _task_dirs(tmp_path)
+    predict = PREDICT.replace('"id": X["id"]', f'"id": [{id_format} for i in X["id"]]')
+    _deliver(workspace, PIPELINE.format(auc=0.92), predict)
+    report = check(PREDICTIVE, workspace, hidden, tmp_path / "scratch")
+    assert report.passed, report.stages

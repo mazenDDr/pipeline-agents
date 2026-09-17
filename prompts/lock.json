@@ -5,10 +5,14 @@
   "critic/user.v1": "ed14f2cfaf61e3e2cfb7761d197dd6bac8aa80ff1e2e3060fdbefd28f55d5342",
   "executor/system.v1": "8e64a916aa0d2bda2cb580962f0e86f649d51606534c798190cf4b093982b4e6",
   "executor/user.v1": "0061b1d474d6011ab6f70f9cda792d0136949c5dbaca7a95de175ce74bca9e83",
+  "memory_writer/system.v1": "1cb7d9df0622e3ba4273a7389188cdd2058b81954f123541b70715b468f1f71e",
+  "memory_writer/user.v1": "93d8aa082bed76bef29b285fc80bae30a1bf7b00b3c5eb3beccfac626e6bfbe6",
   "planner/system.v1": "f66762085b8826e5255c9649e14dc2a23fb7745a68d687f9fbd67aea05b68ff6",
   "planner/system.v2": "74cc575f3d5dbfea8fb44e3803c397176c58f7742bc912063186bd2c35f2069f",
   "planner/user.v1": "621c49ab0427d1f37dcd891cc5a49abde1ddb1462869f99987fd184fdcb5ebe8",
   "planner/user.v2": "8484c898a2d056ffff2942e3b8dabb54bc3b6865d02fd0b2f93ec90103e4ed6b",
   "reviser/system.v1": "a64a4129a1c7b5a97435759bf941f85fdeb2fff6a1c0bca9031cd751e389aa42",
-  "reviser/user.v1": "3f27303bf1267874af05d81f529533afb266efa540f39f8b0ca54b4b3615c59d"
+  "reviser/user.v1": "3f27303bf1267874af05d81f529533afb266efa540f39f8b0ca54b4b3615c59d",
+  "skill_miner/system.v1": "c9c15cbf2f070ea5f16e6073b9320556384315070eb03903c55cb9cede36fe49",
+  "skill_miner/user.v1": "3c346ad8eabe68b62aebbad2c8ac9ad71bfe3f06d4c25835caabf08723cc93a0"
 }
