@@ -5,6 +5,7 @@ name: t11-test-core
 tasks: test
 seeds: [1, 2, 3]
 memory: sequence
+seed_memory: outputs/memory/t11-dev-skills  # 36 skills mined from the t11-dev2 dev runs
 arms:
   - {label: baseline, system: baseline, config: configs/run/default.yaml}
   - {label: multi, system: multi, config: configs/run/default.yaml}
