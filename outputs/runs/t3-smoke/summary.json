@@ -1,0 +1,35 @@
+{
+  "calls": [
+    {
+      "role": "planner",
+      "stakes": "high",
+      "tier": "strong",
+      "degraded": false,
+      "model": "gemma-4-26b-a4b",
+      "input_tokens": 1165,
+      "output_tokens": 823,
+      "ttft_s": 2.4617638350027846,
+      "total_s": 22.38596100400173,
+      "shadow_usd": 0.00035175,
+      "error": null
+    },
+    {
+      "role": "planner",
+      "stakes": "low",
+      "tier": "cheap",
+      "degraded": true,
+      "model": "gemma-4-e4b",
+      "input_tokens": 1161,
+      "output_tokens": 64,
+      "ttft_s": 0.5702856679999968,
+      "total_s": 1.30096262099687,
+      "shadow_usd": 0.00024500000000000005,
+      "error": null
+    }
+  ],
+  "plan": "valid plan, 8 steps: ['load', 'profile', 'clean', 'feature', 'split', 'train', 'evaluate', 'report']",
+  "replay_cached": true,
+  "replay_same_content": true,
+  "replay_shadow_usd": 0.00035175,
+  "original_first_call_shadow_usd": 0.00035175
+}
