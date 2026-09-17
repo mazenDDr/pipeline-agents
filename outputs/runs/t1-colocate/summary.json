@@ -1,0 +1,93 @@
+[
+  {
+    "layout": "strong-alone",
+    "vram_mib": 13879,
+    "available_ram_mib": 22647,
+    "servers": [
+      {
+        "model": "gemma-4-26b-a4b",
+        "load_s": 12.1,
+        "rss_mib": 1909,
+        "ttft_s": 2.126439716997993,
+        "prefill_tps": 2878.7370945432403,
+        "decode_tps": 75.57051521885592,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "layout": "both-gpu",
+    "vram_mib": 13514,
+    "available_ram_mib": 22213,
+    "servers": [
+      {
+        "model": "gemma-4-26b-a4b",
+        "load_s": 6.1,
+        "rss_mib": 14105,
+        "ttft_s": 6.259190889999445,
+        "prefill_tps": 981.081599829075,
+        "decode_tps": 40.75019999558939,
+        "errors": []
+      },
+      {
+        "model": "gemma-4-e4b",
+        "load_s": 4.0,
+        "rss_mib": 1959,
+        "ttft_s": 1.4191783839996788,
+        "prefill_tps": 4317.805812103885,
+        "decode_tps": 82.39609125867946,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "layout": "cheap-e4b-cpu",
+    "vram_mib": 14166,
+    "available_ram_mib": 21968,
+    "servers": [
+      {
+        "model": "gemma-4-26b-a4b",
+        "load_s": 10.3,
+        "rss_mib": 1909,
+        "ttft_s": 2.105646419997356,
+        "prefill_tps": 2905.5237828414,
+        "decode_tps": 75.78945866710417,
+        "errors": []
+      },
+      {
+        "model": "gemma-4-e4b",
+        "load_s": 3.1,
+        "rss_mib": 5839,
+        "ttft_s": 6.138211126999522,
+        "prefill_tps": 993.9218109405446,
+        "decode_tps": 11.831675073806453,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "layout": "cheap-qwen4b-cpu",
+    "vram_mib": 14148,
+    "available_ram_mib": 21764,
+    "servers": [
+      {
+        "model": "gemma-4-26b-a4b",
+        "load_s": 4.1,
+        "rss_mib": 1182,
+        "ttft_s": 2.11547258200153,
+        "prefill_tps": 2894.8726384214824,
+        "decode_tps": 75.69189066766482,
+        "errors": []
+      },
+      {
+        "model": "qwen3.5-4b",
+        "load_s": 3.1,
+        "rss_mib": 3761,
+        "ttft_s": 5.431690124001761,
+        "prefill_tps": 1112.767164576365,
+        "decode_tps": 10.973130708585265,
+        "errors": []
+      }
+    ]
+  }
+]
