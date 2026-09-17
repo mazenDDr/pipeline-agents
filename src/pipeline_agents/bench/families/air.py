@@ -122,7 +122,7 @@ ESTIMATE = TaskSpec(
             kind="temporal",
             caught_by="score only",
             description="Sensors drift over months; a random split overstates accuracy on later months. "
-            "Not caught here: see the note on honesty below.",
+            "Not caught: honest estimates on this data also miss by 36-57%, so the honesty check is off.",
         ),
     ],
     # Measured on the holdout: calibrating CO against its own sensor 0.598, the best single sensor 0.505, the
