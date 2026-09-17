@@ -1,0 +1,38 @@
+[
+  {
+    "task": "bike-1-forecast",
+    "passed": false,
+    "detail": "registered: alone orders cnt almost perfectly (separation 0.99); cnt is a linear combination of features (R^2 1.0000): +1.00*casual +1.00*registered",
+    "seconds": 0.09
+  },
+  {
+    "task": "adult-1-income",
+    "passed": true,
+    "detail": "no feature gives income away (checked 14 columns)",
+    "seconds": 0.13
+  },
+  {
+    "task": "air-2-co-estimate",
+    "passed": true,
+    "detail": "no feature gives CO(GT) away (checked 12 columns)",
+    "seconds": 0.04
+  },
+  {
+    "task": "bank-1-subscribe",
+    "passed": true,
+    "detail": "no feature gives y away (checked 20 columns)",
+    "seconds": 0.17
+  },
+  {
+    "task": "diabetes-1-readmit",
+    "passed": true,
+    "detail": "no feature gives readmitted away (checked 47 columns)",
+    "seconds": 0.27
+  },
+  {
+    "task": "credit-1-default",
+    "passed": true,
+    "detail": "no feature gives default payment next month away (checked 23 columns)",
+    "seconds": 0.15
+  }
+]
