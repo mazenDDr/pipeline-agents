@@ -2,11 +2,11 @@
 
 For every task: build its workspace and hidden answers from data/raw, then run every solution in
 benchmark/solutions/<task_id>/ through the checker. The reference and honest variants must pass; each
-broken variant must fail at the stage named in expected.yaml. Run on the GPU machine:
+broken variant must fail the stage named in expected.yaml (first or not). Run on the GPU machine:
 
     python scripts/validate_benchmark.py [--families bike,...] [--tasks id,...]
 
-Writes outputs/runs/t2-validate/{results.jsonl, summary.json, report.md}.
+Appends to outputs/runs/t2-validate/results.jsonl; scripts/build_benchmark_doc.py summarises it.
 """
 
 import argparse
@@ -50,21 +50,23 @@ def main() -> None:
                     for py in (solutions / variant).glob("*.py"):
                         shutil.copy(py, workspace / "output" / py.name)
                     report = check(task, workspace, bench / task.id / "hidden", Path(tmp) / "scratch")
-                got = "pass" if report.passed else report.first_failure
+                failed = [stage for stage in report.stages if not stage.passed]
+                got = "pass" if report.passed else "+".join(stage.name for stage in failed)
                 row = {
                     "task": task.id,
                     "variant": variant,
                     "expected": want,
                     "got": got,
-                    "ok": got == want,
+                    # A broken solution proves a stage catches its mistake when that stage fails, first or
+                    # not.
+                    "ok": report.passed if want == "pass" else want in {stage.name for stage in failed},
                     **report.to_dict(),
                 }
                 rows.append(row)
                 metric = "" if report.holdout_metric is None else f" holdout={report.holdout_metric:.4f}"
                 if report.validation_metric is not None:
                     metric += f" validation={report.validation_metric:.4f}"
-                failed = next((s for s in report.stages if not s.passed), None)
-                detail = f" | {failed.detail[-160:]}" if failed else ""
+                detail = f" | {failed[0].detail[-160:]}" if failed else ""
                 print(
                     f"{'OK ' if row['ok'] else 'BAD'} {task.id:28s} {variant:24s} want={want:16s} got={got}"
                     f"{metric}{detail}",

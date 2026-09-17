@@ -15,12 +15,10 @@ DATASETS = {
     "bank_marketing": "https://archive.ics.uci.edu/static/public/222/bank+marketing.zip",
     "bike_sharing": "https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip",
     "adult": "https://archive.ics.uci.edu/static/public/2/adult.zip",
-    "wine_quality": "https://archive.ics.uci.edu/static/public/186/wine+quality.zip",
     "credit_default": "https://archive.ics.uci.edu/static/public/350/default+of+credit+card+clients.zip",
     "diabetes_readmission": "https://archive.ics.uci.edu/static/public/296/diabetes+130-us+hospitals+for+years+1999-2008.zip",
     "air_quality": "https://archive.ics.uci.edu/static/public/360/air+quality.zip",
     "online_retail": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
-    "student_performance": "https://archive.ics.uci.edu/static/public/320/student+performance.zip",
 }
 
 
