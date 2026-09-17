@@ -113,9 +113,11 @@ def build_graph(deps: Deps, checkpointer: SqliteSaver | None = None):
         hits = []
         if deps.memory is not None:
             hits = deps.memory.run_hits(state.task_id, Path(state.workspace), state.goal, profile)
+        profiles = {p.name: profile_file(p) for p in files}
         return {
             "dataset_profile": profile,
-            "raw_rows": {p.name: profile_file(p).rows for p in files},
+            "raw_rows": {name: fp.rows for name, fp in profiles.items()},
+            "raw_blank_rows": {name: fp.blank_rows for name, fp in profiles.items()},
             "memory_hits": hits,
         }
 

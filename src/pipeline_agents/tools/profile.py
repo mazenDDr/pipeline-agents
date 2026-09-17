@@ -45,6 +45,7 @@ class FileProfile:
     header_rows: int
     columns: list[ColumnProfile]
     notes: list[str]
+    blank_rows: int = 0  # lines with no values at all, not counted in `rows`
 
     def render(self) -> str:
         size = f"{self.rows:,} data rows, {len(self.columns)} columns"
@@ -245,7 +246,7 @@ def profile_file(path: Path, display_name: str | None = None) -> FileProfile:
         body = body.iloc[:: -(-rows // SAMPLE_ROWS)]
         notes.append(f"column statistics are from {len(body):,} rows spread evenly over the file")
     columns = [_profile_column(names[i], body.iloc[:, i]) for i in range(body.shape[1])]
-    return FileProfile(display_name or path.name, rows, sep, headers, columns, notes)
+    return FileProfile(display_name or path.name, rows, sep, headers, columns, notes, int(blank.sum()))
 
 
 def profile_dir(data_dir: Path, max_files: int = 10) -> str:

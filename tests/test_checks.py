@@ -77,3 +77,53 @@ def test_row_numbers_instead_of_ids_fail_the_smoke_test(tmp_path: Path) -> None:
 def test_identical_predictions_fail_the_smoke_test(tmp_path: Path) -> None:
     smoke = deliver_checks(_state(tmp_path, PREDICT_CONSTANT), UnsandboxedRunner(Limits(timeout_s=60)))[-1]
     assert not smoke.passed and "all 200 predictions are identical" in smoke.detail
+
+
+def _two_steps(tmp_path: Path, s2_rows: int) -> tuple[RunState, Plan]:
+    """s1 filters 300 raw rows to 150 on purpose and was accepted; s2 then writes `s2_rows` rows."""
+    from pipeline_agents.graph.checks import step_checks
+    from pipeline_agents.schemas import StepAttempt, StepRecord
+
+    ws = tmp_path / "workspace"
+    (ws / "output").mkdir(parents=True)
+    table = "order_id,amount\n" + "".join(f"{i},{i}\n" for i in range(300))
+    (ws / "output" / "filtered.csv").write_text("\n".join(table.splitlines()[:151]) + "\n")
+    (ws / "output" / "features.csv").write_text("\n".join(table.splitlines()[: s2_rows + 1]) + "\n")
+    plan = Plan(
+        goal_type="predictive",
+        target_column="amount",
+        steps=[
+            {"id": "s1", "kind": "clean", "intent": "keep one region", "acceptance_checks": ["x"]},
+            {"id": "s2", "kind": "feature", "intent": "add features", "acceptance_checks": ["x"]},
+        ],
+    )
+    task = TaskContext(task_id="toy", task_md="t", kind="predictive", id_column="order_id", metric="mae")
+    state = RunState(
+        run_id="r",
+        task_id="toy",
+        goal="g",
+        task=task,
+        workspace=str(ws),
+        plan=plan,
+        ledger=Ledger(cap_usd=1),
+        raw_rows={"sales.csv": 300},
+        steps={
+            "s1": StepRecord(
+                step_id="s1",
+                status="accepted",
+                attempts=[StepAttempt(attempt=1, code="", exit_code=0, artifacts=["filtered.csv"])],
+            )
+        },
+    )
+    attempt = StepAttempt(attempt=1, code="", exit_code=0, artifacts=["features.csv"])
+    return state, step_checks(state, plan.steps[1], attempt)
+
+
+def test_row_accounting_compares_with_the_previous_accepted_step(tmp_path: Path) -> None:
+    _, findings = _two_steps(tmp_path / "a", s2_rows=150)
+    [rows] = [f for f in findings if f.tool == "row_accounting"]
+    assert rows.passed and "filtered.csv from s1" in rows.detail  # s1's accepted drop is not blamed on s2
+
+    _, findings = _two_steps(tmp_path / "b", s2_rows=100)
+    [rows] = [f for f in findings if f.tool == "row_accounting"]
+    assert not rows.passed and "150 rows in, 100 out" in rows.detail
