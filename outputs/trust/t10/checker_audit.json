@@ -1,0 +1,17 @@
+{
+ "baseline_adult-1-income_s1": {"verdict": "correct", "why": "predict.py expects a person_id header; the holdout features keep the census export format with no header row, as task.md says"},
+ "baseline_adult-1-income_s3": {"verdict": "correct", "why": "predict.py crashes inside the sklearn pipeline on the headerless holdout features"},
+ "baseline_air-2-co-estimate_s1": {"verdict": "correct", "why": "holdout MAE 0.76 against a threshold of 0.45 (the reference solution scores 0.37, a plain linear model 0.38); a real miss"},
+ "baseline_bike-1-forecast_s2": {"verdict": "correct", "why": "holdout MAE 61.3 misses the 60 threshold; the honesty gap (0.28 > 0.25) is a pessimistic estimate, which the two-sided rule also fails, but the score fails first either way"},
+ "baseline_bike-1-forecast_s3": {"verdict": "correct", "why": "holdout MAE 60.6 misses 60 by 0.6; same pessimistic honesty gap as s2, not deciding"},
+ "multi_adult-1-income_s1": {"verdict": "correct", "why": "predict.py read the headerless file with a header: the first record became column names"},
+ "multi_adult-1-income_s2": {"verdict": "correct", "why": "predict.py requires a person_id header the holdout format does not have"},
+ "multi_adult-1-income_s3": {"verdict": "correct", "why": "predict.py selects training feature columns that do not exist in the raw features file"},
+ "multi_air-2-co-estimate_s1": {"verdict": "correct", "why": "the run stopped for a human before delivering a pipeline"},
+ "multi_air-2-co-estimate_s2": {"verdict": "correct", "why": "the run stopped for a human before delivering a pipeline"},
+ "multi_air-2-co-estimate_s3": {"verdict": "correct", "why": "predict.py reads the semicolon-separated features with the default comma separator, so reading_id and the time columns are not found"},
+ "multi_bike-1-forecast_s1": {"verdict": "correct", "why": "holdout MAE 66.1 against 60"},
+ "multi_bike-1-forecast_s2": {"verdict": "correct", "why": "holdout MAE 113.5 against 60, and validation (74.9) was optimistic by 34%"},
+ "multi_bike-1-forecast_s3": {"verdict": "correct", "why": "holdout MAE 66.1 against 60"},
+ "multi_bike-2-weather_s3": {"verdict": "correct", "why": "mean_temp_celsius 0.52 is the normalized value, not degrees; the Critic had accepted this step"}
+}

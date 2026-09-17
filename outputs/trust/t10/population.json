@@ -1,0 +1,15 @@
+{
+ "cases": 181,
+ "strata": {
+  "accept/tools_pass": 128,
+  "accept/tool_fail": 30,
+  "revise/tools_pass": 13,
+  "revise/tool_fail": 10
+ },
+ "sample": {
+  "revise/tools_pass": 13,
+  "revise/tool_fail": 10,
+  "accept/tools_pass": 12,
+  "accept/tool_fail": 15
+ }
+}

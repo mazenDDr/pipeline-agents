@@ -1,0 +1,50 @@
+{"case_id": "multi_adult-1-income_s2#16", "label": "not_ok", "why": "predict.py reads the features with pd.read_csv (header row), but the features file has the census format with no header; its own check printed 'Handles person_id: NO'"}
+{"case_id": "multi_adult-1-income_s2#17", "label": "not_ok", "why": "same predict.py as before: header assumed on a headerless census-format file"}
+{"case_id": "multi_air-1-co-daily_s2#2", "label": "ok", "why": "-200 replaced in CO(GT) as asked; the 114 extra rows are blank rows with no date, so they fall outside November and do not change the answer"}
+{"case_id": "multi_adult-1-income_s1#5", "label": "ok", "why": "trains a pipeline (preprocessor + GBM) on the training split without id or target and saves it"}
+{"case_id": "multi_air-2-co-estimate_s1#4", "label": "ok", "why": "separates sensor/weather features from the target, keeps reading_id in both; dropped rows are target-missing rows (fine for training); median imputed before the split is a small leak, not a blocker"}
+{"case_id": "multi_bike-2-weather_s3#4", "label": "not_ok", "why": "mean_temp_celsius uses the normalized temp (0.52) instead of the Celsius column (x41)"}
+{"case_id": "multi_adult-1-income_s2#11", "label": "ok", "why": "'?' to NaN and income to 0/1 as asked, no rows lost; missing counts are expected"}
+{"case_id": "multi_adult-1-income_s2#9", "label": "not_ok", "why": "predict.py reads a headerless census-format features file as if it had a header"}
+{"case_id": "multi_bike-2-weather_s3#2", "label": "ok", "why": "working-day filter is intended (the row drop is on purpose), temp x41 gives 0.8-40.2 C, weather labels mapped"}
+{"case_id": "multi_air-2-co-estimate_s2#3", "label": "not_ok", "why": "the saved file still contains every (GT) reference column and duplicate datetime columns: the separation the step was for did not happen, leaving leakage columns for the next step"}
+{"case_id": "multi_adult-2-education_s2#5", "label": "not_ok", "why": "all four high-income shares are 0.0: the keys in analysis_results.json were not found and 0.0 was used as a fallback"}
+{"case_id": "multi_bike-1-forecast_s1#3", "label": "ok", "why": "one-hot columns are bool, which models accept; the FAILURE line is the script's own dtype check being too narrow"}
+{"case_id": "multi_air-2-co-estimate_s3#4", "label": "ok", "why": "interpolates the sensor/weather gaps and adds hour and month as asked; interpolating before the split is a small leak, not a blocker"}
+{"case_id": "multi_air-1-co-daily_s1#4", "label": "ok", "why": "drops the 114 blank rows, builds the datetime index, and replaces -200 in every numeric column"}
+{"case_id": "multi_air-2-co-estimate_s3#7", "label": "ok", "why": "drops the four reference (GT) columns and the empty Unnamed columns, and adds month and hour; missing values are left for a later step"}
+{"case_id": "multi_air-2-co-estimate_s2#2", "label": "ok", "why": "dropping rows with a missing target is what the step asked for (the 21% row drop is on purpose); index parsed and sorted"}
+{"case_id": "multi_bike-1-forecast_s1#10", "label": "not_ok", "why": "predict.py fills every model column missing from the raw features file with 0, so one-hot columns built in training become all zero at prediction time (train/serve skew)"}
+{"case_id": "multi_air-2-co-estimate_s2#7", "label": "ok", "why": "drops target-missing rows and median-imputes the rest as asked; nothing is lost that the step meant to keep"}
+{"case_id": "multi_air-2-co-estimate_s3#3", "label": "ok", "why": "interpolates the sensor/weather gaps and adds hour and month as asked; interpolating before the split is a small leak, not a blocker"}
+{"case_id": "multi_bike-2-weather_s1#2", "label": "ok", "why": "working-day filter on purpose; temp x41 in a realistic range; no missing values"}
+{"case_id": "multi_air-1-co-daily_s3#4", "label": "ok", "why": "720 November hours, 41 missing, 30 daily means of valid readings, written in the required format"}
+{"case_id": "multi_bike-1-forecast_s2#15", "label": "ok", "why": "computes validation MAE on a 1,440-row (two-month) validation set with the saved features and writes metrics.json"}
+{"case_id": "multi_air-1-co-daily_s2#6", "label": "ok", "why": "filters November 2004, counts missing CO(GT) hours, daily means skip NaN; answer written"}
+{"case_id": "multi_bike-1-forecast_s1#12", "label": "ok", "why": "builds and saves a ColumnTransformer (one-hot + scaling) that takes raw columns; fitting it on all rows is a small leak, not a blocker"}
+{"case_id": "multi_adult-1-income_s1#18", "label": "not_ok", "why": "predict.py reads the headerless file with a header, so the first record becomes column names and renaming only the first column leaves the rest wrong; prediction will fail or misalign"}
+{"case_id": "multi_bike-1-forecast_s2#16", "label": "not_ok", "why": "predict.py selects the training feature list (58 one-hot columns) straight from the raw features file, which has none of them: KeyError (the placeholder pipeline.py is harmless because the system assembles pipeline.py itself)"}
+{"case_id": "multi_bike-1-forecast_s2#8", "label": "not_ok", "why": "predict.py assumes the input is already one-hot encoded and selects the model's feature columns from a raw file"}
+{"case_id": "multi_adult-1-income_s2#2", "label": "ok", "why": "'?' to NaN and income to 0/1, all rows kept"}
+{"case_id": "multi_air-2-co-estimate_s1#2", "label": "ok", "why": "builds the datetime column, drops the unnamed columns and the target-missing rows as asked"}
+{"case_id": "multi_air-1-co-daily_s1#2", "label": "ok", "why": "datetime index built and -200 replaced in CO(GT) as asked; the 114 blank rows have no date, so they do not affect November"}
+{"case_id": "multi_adult-1-income_s2#1", "label": "ok", "why": "loads the headerless file with the dictionary's names, strips whitespace, 32,561 rows"}
+{"case_id": "multi_adult-2-education_s1#6", "label": "ok", "why": "answer.json with the unknown-occupation count and four plausible shares"}
+{"case_id": "multi_adult-1-income_s3#7", "label": "not_ok", "why": "predict.py reads the headerless census-format file with a header row and never applies names"}
+{"case_id": "multi_air-2-co-estimate_s3#5", "label": "ok", "why": "chronological 80/20 split on time-sorted rows: the last ~1,241 hours are validation, matching 'months after your data'"}
+{"case_id": "multi_air-1-co-daily_s1#3", "label": "ok", "why": "datetime index, -200 replaced in all numeric columns; the blank rows stay but fall outside every date filter"}
+{"case_id": "multi_bike-1-forecast_s3#16", "label": "ok", "why": "predict.py drops id/date/target and feeds the raw columns to a saved pipeline that includes its preprocessor; column selection happens by name in the transformer"}
+{"case_id": "multi_bike-2-weather_s2#5", "label": "ok", "why": "a verification step: answer.json has the right keys and the corrected Celsius temperature; writing no file is expected (the tool's 'no files' flag is a false alarm)"}
+{"case_id": "multi_bike-1-forecast_s2#3", "label": "ok", "why": "one-hot encodes season and weathersit; the new columns are bool, which models accept, so the script's 'not numeric' line is a false alarm"}
+{"case_id": "multi_air-2-co-estimate_s1#7", "label": "ok", "why": "features limited to sensors and weather and imputed; the medians come from all rows rather than the training period as the intent asked, a small leak but later steps can build on it"}
+{"case_id": "multi_air-1-co-daily_s2#4", "label": "ok", "why": "-200 replaced everywhere, datetime built, November 2004 filter gives 720 hours; the row drop is on purpose"}
+{"case_id": "multi_air-2-co-estimate_s1#1", "label": "ok", "why": "semicolon and decimal comma parsed, 114 empty rows dropped, -200 replaced; the empty Unnamed columns are harmless"}
+{"case_id": "multi_bike-2-weather_s1#4", "label": "not_ok", "why": "mean_rentals_per_hour is written as an empty object: the key it read from analysis_results.json does not exist"}
+{"case_id": "multi_adult-1-income_s1#1", "label": "ok", "why": "headerless file loaded with the dictionary's names, whitespace stripped, '?' to NaN, 32,561 rows"}
+{"case_id": "multi_air-2-co-estimate_s1#3", "label": "ok", "why": "sensor/weather features and the target saved as row-aligned files; target.csv without reading_id is fine because rows line up"}
+{"case_id": "multi_air-2-co-estimate_s1#5", "label": "ok", "why": "parsed, empty rows dropped, -200 replaced, datetime built and sorted as asked"}
+{"case_id": "multi_adult-2-education_s1#3", "label": "ok", "why": "removes the 1,843 unknown-occupation records as asked; the other flags (capital_gain 99999, '?' in native_country) do not matter for this question"}
+{"case_id": "multi_air-2-co-estimate_s2#6", "label": "ok", "why": "target-missing rows dropped and other numeric columns median-imputed as asked"}
+{"case_id": "multi_bike-2-weather_s3#3", "label": "not_ok", "why": "every weather mean is 0.0 (it grouped by numeric codes but looked up text labels) and the temperature is still normalized (0.52)"}
+{"case_id": "multi_air-1-co-daily_s2#5", "label": "not_ok", "why": "picked reading_id as the datetime column, found 0 November rows and wrote empty results"}
+{"case_id": "multi_air-2-co-estimate_s3#8", "label": "ok", "why": "sorted by datetime, interpolated sensor/weather gaps, no NaN left in features; target NaN is left for training as noted"}
