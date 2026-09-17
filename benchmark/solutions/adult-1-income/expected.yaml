@@ -1,0 +1,4 @@
+reference: pass
+honest_logistic: pass
+broken_header: coverage
+broken_numeric_only: score

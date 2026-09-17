@@ -42,7 +42,9 @@ class Trap(BaseModel):
     description: str  # what a careful analyst would notice, and where it is documented
     # Which checker stage catches it, or "score only" when falling for it merely lowers the metric.
     # Recorded so the failure analysis never claims a trap was tested when it was not.
-    caught_by: Literal["predict", "score", "honest_estimate", "answer", "score only"]
+    caught_by: Literal[
+        "clean_rerun", "predict", "coverage", "score", "honest_estimate", "answer", "score only"
+    ]
 
 
 class PredictiveCheck(BaseModel):
