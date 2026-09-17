@@ -71,9 +71,10 @@ def main() -> None:
         "| `answer` | an analytical answer matches the hidden answer, within tolerance |",
         "",
         "Each threshold is set above the obvious baseline a practitioner would try first (for example the "
-        "mean for each hour, or one strong column). Every measured model that beats that baseline passes; "
-        "models that do not, such as linear models on the bike forecast, fail. The measured numbers are "
-        "in the comments of each task spec.",
+        "mean for each hour, or one strong column) and below every tree-based and one-hot linear model "
+        "measured on that task, with one exception: on the bike forecast, linear models (MAE 66-80) do worse "
+        "than the baseline and fail. Weaker models in between, such as boosting on the numeric columns only, "
+        "can land on either side. The measured numbers are in the comments of each task spec.",
         "",
         "## Tasks",
         "",
