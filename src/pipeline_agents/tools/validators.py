@@ -154,12 +154,15 @@ def target_leakage(
             sep = _separation(y_numeric if not _binary(y) else y, x)
             if sep >= threshold:
                 flags.append(f"{col}: alone orders {target} almost perfectly (separation {sep:.2f})")
-        elif 1 < x.nunique() <= 100:
-            majority_share = y.value_counts(normalize=True).iloc[0]
-            purity = data.groupby(x.astype(str), observed=True)[target].agg(
+        elif 1 < x.nunique() <= 100 and y.notna().any():
+            # Only rows with a known target: a group whose targets are all missing has no majority (it crashed
+            # a grid run when it was not filtered out).
+            known = data[y.notna()]
+            majority_share = known[target].value_counts(normalize=True).iloc[0]
+            purity = known.groupby(known[col].astype(str), observed=True)[target].agg(
                 lambda s: s.value_counts(normalize=True).iloc[0]
             )
-            weights = x.astype(str).value_counts(normalize=True)
+            weights = known[col].astype(str).value_counts(normalize=True)
             weighted = float((purity * weights.reindex(purity.index)).sum())
             if weighted >= 0.99 and majority_share < 0.9:
                 flags.append(
