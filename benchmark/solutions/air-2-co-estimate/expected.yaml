@@ -1,0 +1,9 @@
+# variant: pass, or the checker stage where it must fail
+reference: pass
+honest_linear: pass
+broken_analyzer_columns: predict
+broken_keep_minus200: score
+broken_no_decimal: clean_rerun
+broken_mean: score
+# Not caught, on purpose: the honesty check is off for this task (see its spec). Kept to show the limit.
+uncaught_random_split: pass
