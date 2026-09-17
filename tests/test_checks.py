@@ -1,0 +1,61 @@
+"""Delivery checks: what a failed script said reaches the Reviser, and the smoke features drop the target."""
+
+from pathlib import Path
+
+from pipeline_agents.graph.checks import assemble_pipeline, deliver_checks
+from pipeline_agents.sandbox.runner import Limits, UnsandboxedRunner
+from pipeline_agents.schemas import Ledger, Plan, RunState, TaskContext
+
+STEP = """
+import json, pandas as pd
+df = pd.read_csv("data/sales.csv")
+json.dump({"mean": float(df["amount"].mean())}, open("output/model.json", "w"))
+json.dump({"validation_mae": 1.0}, open("output/metrics.json", "w"))
+"""
+PREDICT_OK = """
+import json, sys, pandas as pd
+X = pd.read_csv(sys.argv[1])
+if "amount" in X.columns:
+    print("refusing: the features contain the target column amount")
+    sys.exit(1)
+mean = json.load(open("output/model.json"))["mean"]
+pd.DataFrame({"order_id": X["order_id"], "prediction": mean}).to_csv(sys.argv[2], index=False)
+"""
+PREDICT_SILENT_FAIL = "import sys\nprint('model file has the wrong version, cannot predict')\nsys.exit(1)\n"
+
+
+def _state(tmp_path: Path, predict: str) -> RunState:
+    ws = tmp_path / "workspace"
+    (ws / "data").mkdir(parents=True)
+    (ws / "output").mkdir()
+    (ws / "data" / "sales.csv").write_text(
+        "order_id,region,amount\n" + "".join(f"{i},r{i % 3},{i}\n" for i in range(300))
+    )
+    (ws / "output" / "step_01_train.py").write_text(STEP)
+    (ws / "output" / "predict.py").write_text(predict)
+    plan = Plan(
+        goal_type="predictive",
+        target_column="amount",
+        steps=[{"id": "s1", "kind": "train", "intent": "fit the mean", "acceptance_checks": ["metrics"]}],
+    )
+    task = TaskContext(
+        task_id="toy", task_md="predict amount", kind="predictive", id_column="order_id", metric="mae"
+    )
+    state = RunState(
+        run_id="r", task_id="toy", goal="g", task=task, workspace=str(ws), plan=plan, ledger=Ledger(cap_usd=1)
+    )
+    assemble_pipeline(state, ["step_01_train.py"])
+    return state
+
+
+def test_smoke_features_have_no_target_column(tmp_path: Path) -> None:
+    findings = deliver_checks(_state(tmp_path, PREDICT_OK), UnsandboxedRunner(Limits(timeout_s=60)))
+    assert all(f.passed for f in findings), [f.detail for f in findings]
+    assert [f.tool for f in findings] == ["clean_rerun", "deliverables", "predict_smoke"]
+
+
+def test_a_failure_printed_to_stdout_reaches_the_finding(tmp_path: Path) -> None:
+    findings = deliver_checks(_state(tmp_path, PREDICT_SILENT_FAIL), UnsandboxedRunner(Limits(timeout_s=60)))
+    smoke = findings[-1]
+    assert smoke.tool == "predict_smoke" and not smoke.passed
+    assert "model file has the wrong version" in smoke.detail

@@ -1,0 +1,37 @@
+{
+  "run_id": "t6-e2e-bike-2-weather",
+  "task": "bike-2-weather",
+  "status": "succeeded",
+  "stop_reason": "delivered",
+  "success": false,
+  "seconds": 154.9,
+  "model_calls": 12,
+  "shadow_usd": 0.0037161899999999994,
+  "replans": 0,
+  "steps": {
+    "s1": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s2": {
+      "attempts": 2,
+      "revisions": 1,
+      "status": "accepted"
+    },
+    "s3": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s4": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    }
+  },
+  "sandboxed": true,
+  "checker_first_failure": "answer",
+  "holdout_metric": null,
+  "note": "Failed the answer check. First broken stage: missing_and_sentinels flagged 99 rentals as a missing-value code; the Critic (confidence 1) and Reviser had valid rows deleted. Tool rule removed."
+}

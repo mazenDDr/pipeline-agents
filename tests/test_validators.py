@@ -203,3 +203,11 @@ def test_clean_rerun_catches_hand_made_outputs(tmp_path: Path) -> None:
     (work / "output" / "out.csv").write_text("a\n1\n2\n3\n")
     finding = clean_rerun(UnsandboxedRunner(Limits(timeout_s=60)), work, "output/step.py", ["output/out.csv"])
     assert not finding.passed and "out.csv not produced" in finding.detail
+
+
+def test_a_known_code_inside_the_normal_range_is_data() -> None:
+    """Regression from the first real run: 99 rentals in an hour was flagged as a missing-value code, and the
+    Critic had valid rows deleted."""
+    counts = pd.DataFrame({"cnt": RNG.poisson(120, 5000), "casual": RNG.integers(0, 367, 5000)})
+    assert (counts == 99).any().all()
+    assert missing_and_sentinels(counts).passed

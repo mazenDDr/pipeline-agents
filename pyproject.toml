@@ -12,6 +12,12 @@ dependencies = [
   "scikit-learn>=1.5,<1.9",  # match the GPU machine (1.8)
   "openai>=1.40",
   "jinja2>=3.1",
+  # Pinned to the GPU machine's env, where runs happen (checked 2026-09-17).
+  "langgraph==1.0.8",
+  "langgraph-checkpoint==4.2.0",
+  "langgraph-checkpoint-sqlite==3.1.1",
+  "langchain-core==1.2.13",
+  "langgraph-prebuilt==1.0.7",
 ]
 
 [project.optional-dependencies]

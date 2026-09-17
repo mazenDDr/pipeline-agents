@@ -1,0 +1,40 @@
+# Task
+
+{{ task_md }}
+
+# Data dictionary
+
+{{ data_readme }}
+
+# The step
+
+- id: {{ step.id }} [{{ step.kind }}]
+- intent: {{ step.intent }}
+- acceptance checks: {% for check in step.acceptance_checks %}{{ check }}{% if not loop.last %}; {% endif %}{% endfor %}
+
+
+# What the Executor wrote
+
+```python
+{{ attempt.code }}
+```
+CLAIMS: {{ attempt.claims }}
+
+# What happened
+
+Exit: {{ attempt.exit_code }} ({{ reason }})
+Files written: {{ attempt.artifacts }}
+Printed:
+{{ attempt.stdout }}
+Errors:
+{{ attempt.stderr }}
+
+# Validation tool findings
+
+{% if findings %}
+{% for f in findings %}
+- [{{ "pass" if f.passed else "FAIL" }}] {{ f.tool }}: {{ f.detail }}
+{% endfor %}
+{% else %}
+No tools applied to this step.
+{% endif %}

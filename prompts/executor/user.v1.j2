@@ -1,0 +1,69 @@
+# Task
+
+{{ task_md }}
+
+# Data dictionary
+
+{{ data_readme }}
+
+# Data profile
+
+{{ dataset_profile }}
+
+# Plan (version {{ plan.version }})
+
+{% for step in plan.steps %}
+- {{ step.id }} [{{ step.kind }}] {{ step.intent }}{% if step.id == current.id %}  <-- this step{% endif %}
+
+{% endfor %}
+
+# Earlier steps
+
+{% if done %}
+{% for d in done %}
+## {{ d.step_id }}: {{ d.file }}
+Claims: {{ d.claims }}
+Printed:
+{{ d.stdout }}
+{% endfor %}
+{% else %}
+None yet.
+{% endif %}
+Files in output/ now: {{ output_files }}
+
+# This step
+
+- id: {{ current.id }}
+- kind: {{ current.kind }}
+- intent: {{ current.intent }}
+- acceptance checks: {% for check in current.acceptance_checks %}{{ check }}{% if not loop.last %}; {% endif %}{% endfor %}
+
+- the script will be saved as: output/{{ file }}
+{% if is_last %}
+- this is the LAST step: the script must also produce the deliverables described in the task.
+{% endif %}
+{% if memory_hits %}
+
+# Notes retrieved from memory
+
+{% for hit in memory_hits %}
+- ({{ hit.store }}) {{ hit.text }}
+{% endfor %}
+{% endif %}
+{% if previous %}
+
+# Previous attempt at this step
+
+```python
+{{ previous.code }}
+```
+Exit: {{ previous.exit_code }} ({{ previous.reason }})
+Printed:
+{{ previous.stdout }}
+Errors:
+{{ previous.stderr }}
+
+# What to fix
+
+{{ revision }}
+{% endif %}
