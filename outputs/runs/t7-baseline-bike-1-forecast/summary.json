@@ -1,0 +1,19 @@
+{
+  "run_id": "t7-baseline-bike-1-forecast",
+  "task": "bike-1-forecast",
+  "system": "baseline",
+  "status": "succeeded",
+  "stop_reason": "delivered",
+  "success": false,
+  "seconds": 109.9,
+  "model_calls": 2,
+  "shadow_usd": 0.00166011,
+  "steps": {
+    "attempts": 2
+  },
+  "sandboxed": true,
+  "checker_first_failure": "score",
+  "holdout_metric": 123.88859983864045,
+  "validation_metric": 54.764448984624636,
+  "note": "Delivered, handled the leak and used a chronological split, but kept `instant` as a feature in training while predict.py dropped it and reindex(fill_value=0) zero-filled it: train/serve skew. Validation MAE 54.8, holdout 123.9; caught by the honesty check (gap 0.56 > 0.25) and the score."
+}

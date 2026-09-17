@@ -106,7 +106,7 @@ def assemble_pipeline(state: RunState, files: list[str]) -> None:
     (Path(state.workspace) / "output" / "pipeline.py").write_text(PIPELINE.format(steps=files))
 
 
-def _smoke_features(state: RunState, fresh: Path) -> Path | None:
+def _smoke_features(state: RunState, fresh: Path, target_column: str | None) -> Path | None:
     """A slice of the data file that holds the id column, in its raw format: header lines plus 200 rows.
 
     The target column is dropped when the file has one ordinary header row; otherwise (no header, two header
@@ -131,7 +131,6 @@ def _smoke_features(state: RunState, fresh: Path) -> Path | None:
     source = (with_id or sorted(files, key=lambda p: -p.stat().st_size))[0]
     profile = profile_file(source)
     target_path = fresh / f"smoke_features{source.suffix}"
-    target_column = state.plan.target_column if state.plan else None
     if profile.header_rows == 1 and target_column:
         frame = pd.read_csv(source, sep=profile.separator, nrows=200, dtype=str, keep_default_na=False)
         if target_column in frame.columns:
@@ -143,7 +142,7 @@ def _smoke_features(state: RunState, fresh: Path) -> Path | None:
     return target_path
 
 
-def _output_tail(result, limit: int = 600) -> str:
+def output_tail(result, limit: int = 600) -> str:
     """What a failed script said, wherever it said it: scripts often print their error and exit(1)."""
     parts = [
         f"stderr: {result.stderr[-limit:]}" if result.stderr.strip() else "",
@@ -152,7 +151,8 @@ def _output_tail(result, limit: int = 600) -> str:
     return " | ".join(p for p in parts if p) or "no output at all"
 
 
-def deliver_checks(state: RunState, runner) -> list[Finding]:
+def deliver_checks(state: RunState, runner, target_column: str | None = None) -> list[Finding]:
+    """`target_column` defaults to the plan's; the single-agent baseline has no plan and passes its own."""
     workspace = Path(state.workspace)
     findings: list[Finding] = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -168,7 +168,7 @@ def deliver_checks(state: RunState, runner) -> list[Finding]:
                 passed=rerun.ok,
                 detail="pipeline.py ran from a clean copy"
                 if rerun.ok
-                else f"pipeline.py failed from a clean copy ({rerun.reason}): {_output_tail(rerun)}",
+                else f"pipeline.py failed from a clean copy ({rerun.reason}): {output_tail(rerun)}",
             )
         )
         if not rerun.ok:
@@ -212,7 +212,8 @@ def deliver_checks(state: RunState, runner) -> list[Finding]:
         if missing:
             return findings
 
-        features = _smoke_features(state, fresh)
+        target = target_column or (state.plan.target_column if state.plan else None)
+        features = _smoke_features(state, fresh, target)
         if features is None:
             return findings
         smoke = runner.run(fresh, ["output/predict.py", features.name, "smoke_predictions.csv"])
@@ -223,7 +224,7 @@ def deliver_checks(state: RunState, runner) -> list[Finding]:
                     tool="predict_smoke",
                     passed=False,
                     detail=f"predict.py failed on 200 rows of {features.name} ({smoke.reason}): "
-                    f"{_output_tail(smoke)}",
+                    f"{output_tail(smoke)}",
                 )
             )
             return findings

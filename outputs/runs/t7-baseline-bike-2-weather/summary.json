@@ -1,0 +1,19 @@
+{
+  "run_id": "t7-baseline-bike-2-weather",
+  "task": "bike-2-weather",
+  "system": "baseline",
+  "status": "succeeded",
+  "stop_reason": "delivered",
+  "success": true,
+  "seconds": 30.4,
+  "model_calls": 1,
+  "shadow_usd": 0.000465,
+  "steps": {
+    "attempts": 1
+  },
+  "sandboxed": true,
+  "checker_first_failure": null,
+  "holdout_metric": null,
+  "validation_metric": null,
+  "note": "Succeeded on the first reply: 1 model call."
+}

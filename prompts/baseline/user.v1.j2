@@ -1,0 +1,37 @@
+# Task
+
+{{ task_md }}
+
+# Data dictionary
+
+{{ data_readme }}
+
+# Data profile
+
+{{ dataset_profile }}
+{% if memory_hits %}
+
+# Notes retrieved from memory
+
+{% for hit in memory_hits %}
+- ({{ hit.store }}) {{ hit.text }}
+{% endfor %}
+{% endif %}
+{% if previous %}
+
+# Your previous attempt did not pass
+
+{% for name, code in previous.files.items() %}
+### output/{{ name }}
+```python
+{{ code }}
+```
+{% endfor %}
+
+What went wrong:
+{% for problem in previous.problems %}
+- {{ problem }}
+{% endfor %}
+
+Fix the problems and reply again in the same shape, with complete files.
+{% endif %}
