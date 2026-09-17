@@ -109,8 +109,8 @@ def assemble_pipeline(state: RunState, files: list[str]) -> None:
 def _smoke_features(state: RunState, fresh: Path) -> Path | None:
     """A slice of the data file that holds the id column, in its raw format: header lines plus 200 rows.
 
-    Unlike the checker's holdout, the slice still contains the target column: a smoke test that predict.py
-    runs and writes one prediction per id, not a score.
+    The target column is dropped when the file has one ordinary header row; otherwise (no header, two header
+    rows) the raw lines are kept, target included. A smoke test that predict.py runs, not a score.
     """
     data = Path(state.workspace) / "data"
     files = [
@@ -129,11 +129,27 @@ def _smoke_features(state: RunState, fresh: Path) -> Path | None:
         if id_column and re.search(rf"\b{re.escape(id_column)}\b", p.read_text(errors="replace")[:2000])
     ]
     source = (with_id or sorted(files, key=lambda p: -p.stat().st_size))[0]
-    header_rows = profile_file(source).header_rows
+    profile = profile_file(source)
+    target_path = fresh / f"smoke_features{source.suffix}"
+    target_column = state.plan.target_column if state.plan else None
+    if profile.header_rows == 1 and target_column:
+        frame = pd.read_csv(source, sep=profile.separator, nrows=200, dtype=str, keep_default_na=False)
+        if target_column in frame.columns:
+            # Like the real holdout, the features must not contain the target.
+            frame.drop(columns=[target_column]).to_csv(target_path, sep=profile.separator, index=False)
+            return target_path
     lines = source.read_text(errors="replace").splitlines(keepends=True)
-    target = fresh / f"smoke_features{source.suffix}"
-    target.write_text("".join(lines[: header_rows + 200]))
-    return target
+    target_path.write_text("".join(lines[: profile.header_rows + 200]))
+    return target_path
+
+
+def _output_tail(result, limit: int = 600) -> str:
+    """What a failed script said, wherever it said it: scripts often print their error and exit(1)."""
+    parts = [
+        f"stderr: {result.stderr[-limit:]}" if result.stderr.strip() else "",
+        f"stdout: {result.stdout[-limit:]}" if result.stdout.strip() else "",
+    ]
+    return " | ".join(p for p in parts if p) or "no output at all"
 
 
 def deliver_checks(state: RunState, runner) -> list[Finding]:
@@ -152,7 +168,7 @@ def deliver_checks(state: RunState, runner) -> list[Finding]:
                 passed=rerun.ok,
                 detail="pipeline.py ran from a clean copy"
                 if rerun.ok
-                else f"pipeline.py failed from a clean copy ({rerun.reason}): {rerun.stderr[-600:]}",
+                else f"pipeline.py failed from a clean copy ({rerun.reason}): {_output_tail(rerun)}",
             )
         )
         if not rerun.ok:
@@ -207,7 +223,7 @@ def deliver_checks(state: RunState, runner) -> list[Finding]:
                     tool="predict_smoke",
                     passed=False,
                     detail=f"predict.py failed on 200 rows of {features.name} ({smoke.reason}): "
-                    f"{smoke.stderr[-600:]}",
+                    f"{_output_tail(smoke)}",
                 )
             )
             return findings

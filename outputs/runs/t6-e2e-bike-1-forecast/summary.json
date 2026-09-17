@@ -1,0 +1,52 @@
+{
+  "run_id": "t6-e2e-bike-1-forecast",
+  "task": "bike-1-forecast",
+  "status": "succeeded",
+  "stop_reason": "delivered",
+  "success": false,
+  "seconds": 593.7,
+  "model_calls": 41,
+  "shadow_usd": 0.01521411,
+  "replans": 1,
+  "steps": {
+    "s1": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s2": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s3": {
+      "attempts": 2,
+      "revisions": 1,
+      "status": "accepted"
+    },
+    "s4": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s5": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s6": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s7": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    }
+  },
+  "sandboxed": true,
+  "checker_first_failure": "score",
+  "holdout_metric": 66.41942296642534,
+  "note": "Delivered but holdout MAE 66.4 > 60 (worse than the hour x workingday baseline, 63.5); its own validation MAE was 74 and nothing compared it with a simple baseline. One re-plan was caused by the harness: predict_smoke reported an empty error (the script printed to stdout). Fixed."
+}

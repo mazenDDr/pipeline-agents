@@ -1,0 +1,37 @@
+{
+  "run_id": "t6-e2e-bike-2-weather-r2",
+  "task": "bike-2-weather",
+  "status": "succeeded",
+  "stop_reason": "delivered",
+  "success": true,
+  "seconds": 210.3,
+  "model_calls": 13,
+  "shadow_usd": 0.00505029,
+  "replans": 0,
+  "steps": {
+    "s1": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s2": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s3": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s4": {
+      "attempts": 3,
+      "revisions": 2,
+      "status": "accepted"
+    }
+  },
+  "sandboxed": true,
+  "checker_first_failure": null,
+  "holdout_metric": null,
+  "note": "Succeeded after the tool fix."
+}
