@@ -1,0 +1,29 @@
+# Model candidates for T1 (runtime + tier choice). GGUF quants from unsloth, chosen so each
+# fits the 16 GB card or, for the MoE models, offloads experts to system RAM (~23 GB).
+# Sizes are from the Hugging Face file listing on 2026-09-16.
+strong:
+  - name: gpt-oss-20b
+    repo: unsloth/gpt-oss-20b-GGUF
+    file: gpt-oss-20b-F16.gguf          # native MXFP4 experts; 12.85 GiB
+  - name: qwen3.6-35b-a3b
+    repo: unsloth/Qwen3.6-35B-A3B-GGUF
+    file: Qwen3.6-35B-A3B-UD-Q4_K_M.gguf  # 20.61 GiB, MoE: experts partly on CPU
+  - name: qwen3.6-27b
+    repo: unsloth/Qwen3.6-27B-GGUF
+    file: Qwen3.6-27B-IQ4_XS.gguf       # 14.38 GiB, dense: little room for KV cache
+  - name: gemma-4-26b-a4b
+    repo: unsloth/gemma-4-26B-A4B-it-GGUF
+    file: gemma-4-26B-A4B-it-UD-IQ4_XS.gguf  # 12.66 GiB
+  - name: devstral-small-2-24b
+    repo: unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF
+    file: Devstral-Small-2-24B-Instruct-2512-Q4_K_M.gguf  # 13.35 GiB
+cheap:
+  - name: qwen3.5-9b
+    repo: unsloth/Qwen3.5-9B-GGUF
+    file: Qwen3.5-9B-Q4_K_M.gguf        # 5.29 GiB
+  - name: qwen3.5-4b
+    repo: unsloth/Qwen3.5-4B-GGUF
+    file: Qwen3.5-4B-Q4_K_M.gguf        # 2.55 GiB
+  - name: gemma-4-e4b
+    repo: unsloth/gemma-4-E4B-it-GGUF
+    file: gemma-4-E4B-it-Q4_K_M.gguf    # 4.64 GiB

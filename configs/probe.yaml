@@ -1,0 +1,59 @@
+# T1 model probe. Every model runs in llama-server with the same context, slots and sampling, so the
+# rows differ only in the model and its thinking mode. Sampling is one shared setting, not each model
+# card's recommendation (a stated limitation of the comparison).
+server_binary: /home/mazen/llama.cpp/build-cuda/bin/llama-server  # the CUDA build; ~/llama.cpp/build is CPU-only
+model_dir: models/gguf
+port: 8081
+server_args: ["-c", "16384", "-np", "1", "-fa", "on", "--fit", "on", "--jinja",
+              "--reasoning-format", "deepseek", "--metrics"]
+sampling: {temperature: 0.6, top_p: 0.95, top_k: 20, max_tokens: 8192}
+speed_repeats: 3
+data_seed: 7
+code_timeout_s: 120
+
+models:
+  - name: qwen3.5-4b
+    file: Qwen3.5-4B-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.5-9b
+    file: Qwen3.5-9B-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.6-35b-a3b
+    file: Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: qwen3.6-27b
+    file: Qwen3.6-27B-IQ4_XS.gguf
+    # Stopped after 9 rows: 12 tok/s decode and ~5 min per thinking call on this card, too slow to
+    # serve an agent that makes dozens of calls per run. The faster no-think mode still gives a quality row.
+    skip_modes: {think: "too slow for an agent tier (12 tok/s, ~319 s per call); stopped 2026-09-17"}
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  # Gemma 4's template also reads enable_thinking (checked in the GGUF metadata, 2026-09-16).
+  - name: gemma-4-e4b
+    file: gemma-4-E4B-it-Q4_K_M.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  - name: gemma-4-26b-a4b
+    file: gemma-4-26B-A4B-it-UD-IQ4_XS.gguf
+    modes:
+      think: {chat_template_kwargs: {enable_thinking: true}}
+      no-think: {chat_template_kwargs: {enable_thinking: false}}
+  # gpt-oss always reasons; its template takes an effort level instead of an on/off switch.
+  - name: gpt-oss-20b
+    file: gpt-oss-20b-F16.gguf
+    modes:
+      think: {chat_template_kwargs: {reasoning_effort: medium}}
+      no-think: {chat_template_kwargs: {reasoning_effort: low}}
+  # Devstral Small 2 has no thinking mode.
+  - name: devstral-small-2-24b
+    file: Devstral-Small-2-24B-Instruct-2512-Q4_K_M.gguf
+    modes:
+      default: {}

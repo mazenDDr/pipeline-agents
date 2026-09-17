@@ -1,0 +1,86 @@
+{
+  "rows": [
+    {
+      "model": "qwen3.5-4b",
+      "mode": "think",
+      "load_s": 2.061208380999915,
+      "vram_mib": 3407,
+      "rss_mib": 9001,
+      "ttft_6k_s": 1.49464349699997,
+      "prefill_tps": 4054.6351164321895,
+      "decode_tps": 94.59860513429292,
+      "plan_valid_prompt": 1.0,
+      "plan_sound_prompt": 1.0,
+      "plan_valid_enforced": 0.75,
+      "plan_sound_enforced": 0.75,
+      "n_plans": 16,
+      "code_pass": 0.5,
+      "code_pass_ci": [
+        0.25,
+        0.75
+      ],
+      "n_code_tasks": 12,
+      "n_code_samples": 12,
+      "mean_call_s": 27.625960569607155,
+      "mean_completion_tokens": 2667.035714285714,
+      "truncated": 2,
+      "call_errors": 0
+    },
+    {
+      "model": "qwen3.5-4b",
+      "mode": "no-think",
+      "load_s": 3.010888836999584,
+      "vram_mib": 3407,
+      "rss_mib": 7084,
+      "ttft_6k_s": 1.5165966969998408,
+      "prefill_tps": 3999.0805493121675,
+      "decode_tps": 93.38784742110376,
+      "plan_valid_prompt": 1.0,
+      "plan_sound_prompt": 1.0,
+      "plan_valid_enforced": 1.0,
+      "plan_sound_enforced": 0.875,
+      "n_plans": 16,
+      "code_pass": 0.6666666666666666,
+      "code_pass_ci": [
+        0.4166666666666667,
+        0.9166666666666666
+      ],
+      "n_code_tasks": 12,
+      "n_code_samples": 12,
+      "mean_call_s": 6.7391440297856855,
+      "mean_completion_tokens": 637.1785714285714,
+      "truncated": 0,
+      "call_errors": 0
+    }
+  ],
+  "code_matrix": {
+    "qwen3.5-4b (think)": {
+      "impute_skewed": 1.0,
+      "sentinel_missing": 1.0,
+      "int_coded_categorical": 0.0,
+      "dedupe_normalized": 1.0,
+      "mixed_dates": 0.0,
+      "leaky_column": 0.0,
+      "skewed_regression": 0.0,
+      "filtered_topk": 1.0,
+      "unseen_category": 0.0,
+      "padded_keys": 0.0,
+      "percentile_clip": 1.0,
+      "cv_pipeline": 1.0
+    },
+    "qwen3.5-4b (no-think)": {
+      "impute_skewed": 1.0,
+      "sentinel_missing": 1.0,
+      "int_coded_categorical": 1.0,
+      "dedupe_normalized": 1.0,
+      "mixed_dates": 1.0,
+      "leaky_column": 0.0,
+      "skewed_regression": 1.0,
+      "filtered_topk": 1.0,
+      "unseen_category": 0.0,
+      "padded_keys": 0.0,
+      "percentile_clip": 1.0,
+      "cv_pipeline": 0.0
+    }
+  }
+}
