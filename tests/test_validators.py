@@ -54,6 +54,9 @@ def test_row_accounting() -> None:
     assert not silent_drop.passed and "66.4% dropped" in silent_drop.detail
     assert not row_accounting(1000, 1400).passed  # a join that duplicated rows
     assert row_accounting(1000, 1400, allow_added=True).passed
+    kept_blank_lines = row_accounting(7854, 7968, blank_rows=114)
+    assert kept_blank_lines.passed and "empty lines" in kept_blank_lines.detail
+    assert not row_accounting(7854, 7969, blank_rows=114).passed
 
 
 def test_required_columns() -> None:

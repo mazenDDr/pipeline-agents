@@ -116,3 +116,10 @@ def test_profile_dir_skips_documentation(tmp_path: Path, name: str) -> None:
     _write(tmp_path, "a.csv", "x,y\n1,2\n3,4\n5,6\n")
     rendered = profile_dir(tmp_path)
     assert "a.csv" in rendered and name not in rendered
+
+
+def test_blank_lines_are_counted_apart_from_data_rows(tmp_path: Path) -> None:
+    path = tmp_path / "readings.csv"
+    path.write_text("id;value;;\n1;2,5;;\n2;3,0;;\n;;;\n;;;\n")
+    profile = profile_file(path)
+    assert (profile.rows, profile.blank_rows) == (2, 2)

@@ -144,6 +144,7 @@ class RunState(BaseModel):
     workspace: str = ""  # the run's copy of the task workspace; step scripts run here
     dataset_profile: str = ""
     raw_rows: dict[str, int] = {}  # data rows per input file, for row accounting
+    raw_blank_rows: dict[str, int] = {}  # empty lines per input file, which a loader may keep as rows
     plan: Plan | None = None
     plan_history: list[Plan] = []  # every superseded plan, for the re-plan trace
     archived_steps: list[dict[str, StepRecord]] = []  # the step records of each superseded plan

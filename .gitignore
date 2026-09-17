@@ -20,3 +20,11 @@ outputs/runs/*
 outputs/runs/*/*
 !outputs/runs/*/summary.json
 !outputs/runs/*/report.md
+!outputs/trust/
+outputs/trust/*
+!outputs/trust/*/
+outputs/trust/*/*
+!outputs/trust/*/labels_reference.jsonl
+!outputs/trust/*/checker_audit.json
+!outputs/trust/*/population.json
+!outputs/trust/*/scores.json

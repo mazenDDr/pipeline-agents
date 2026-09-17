@@ -1,0 +1,59 @@
+{
+ "reference": {
+  "labelled": 50,
+  "kappa": 0.295190713101161,
+  "kappa_ci": [
+   0.036847079433866704,
+   0.5409396970547142
+  ],
+  "agreement": 0.66,
+  "confusion": {
+   "not_ok->not_ok": 10,
+   "ok->not_ok": 13,
+   "ok->ok": 23,
+   "not_ok->ok": 4
+  },
+  "strata": {
+   "accept/tool_fail": {
+    "labelled": 15,
+    "population": 30,
+    "agree": 15,
+    "too_strict": 0,
+    "too_lenient": 0,
+    "est_too_strict": 0.0,
+    "est_too_lenient": 0.0
+   },
+   "accept/tools_pass": {
+    "labelled": 12,
+    "population": 128,
+    "agree": 8,
+    "too_strict": 0,
+    "too_lenient": 4,
+    "est_too_strict": 0.0,
+    "est_too_lenient": 42.666666666666664
+   },
+   "revise/tool_fail": {
+    "labelled": 10,
+    "population": 10,
+    "agree": 1,
+    "too_strict": 9,
+    "too_lenient": 0,
+    "est_too_strict": 9.0,
+    "est_too_lenient": 0.0
+   },
+   "revise/tools_pass": {
+    "labelled": 13,
+    "population": 13,
+    "agree": 9,
+    "too_strict": 4,
+    "too_lenient": 0,
+    "est_too_strict": 4.0,
+    "est_too_lenient": 0.0
+   }
+  },
+  "est_too_strict": 13.0,
+  "est_too_lenient": 42.666666666666664,
+  "population": 181
+ },
+ "between_labellers": {}
+}

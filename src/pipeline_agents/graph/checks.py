@@ -34,6 +34,30 @@ def _read_table(path: Path) -> pd.DataFrame | None:
         return None
 
 
+def _row_reference(state: RunState, step: PlanStep) -> tuple[int, str, int] | None:
+    """What a step's row count is compared with: the largest table from the closest earlier accepted step that
+    wrote one, else the largest raw file. Comparing every step with the raw file blamed each later step again
+    for a drop an earlier step had already made (and the Critic had accepted)."""
+    earlier = [s for s in state.plan.steps[: [p.id for p in state.plan.steps].index(step.id)]]
+    output = Path(state.workspace) / "output"
+    for prior in reversed(earlier):
+        record = state.steps.get(prior.id)
+        if record is None or record.status != "accepted" or not record.attempts:
+            continue
+        tables = [
+            output / a for a in record.attempts[-1].artifacts if a.endswith(".csv") and (output / a).exists()
+        ]
+        if tables:
+            biggest = max(tables, key=lambda p: p.stat().st_size)
+            df = _read_table(biggest)
+            if df is not None:
+                return len(df), f"{biggest.name} from {prior.id}", 0
+    if not state.raw_rows:
+        return None
+    name = max(state.raw_rows, key=state.raw_rows.get)
+    return state.raw_rows[name], "the largest raw file", state.raw_blank_rows.get(name, 0)
+
+
 def step_checks(state: RunState, step: PlanStep, attempt: StepAttempt) -> list[Finding]:
     output = Path(state.workspace) / "output"
     findings: list[Finding] = []
@@ -43,7 +67,7 @@ def step_checks(state: RunState, step: PlanStep, attempt: StepAttempt) -> list[F
             Finding(tool="artifacts", passed=False, detail="the step wrote no files for later steps")
         )
     target, id_column = state.plan.target_column, state.task.id_column
-    largest_raw = max(state.raw_rows.values(), default=0)
+    reference = _row_reference(state, step)
 
     tables = sorted((a for a in written if a.endswith(".csv")), key=lambda a: -(output / a).stat().st_size)
     for name in tables[:MAX_TABLES]:
@@ -56,11 +80,10 @@ def step_checks(state: RunState, step: PlanStep, attempt: StepAttempt) -> list[F
         if step.kind in ("clean", "feature"):
             f = missing_and_sentinels(df)
             findings.append(f.model_copy(update={"detail": f"{name}: {f.detail}"}))
-            if largest_raw:
-                f = row_accounting(largest_raw, len(df), max_drop=0.05)
-                findings.append(
-                    f.model_copy(update={"detail": f"{name} vs the largest raw file: {f.detail}"})
-                )
+            if reference:
+                rows, label, blank = reference
+                f = row_accounting(rows, len(df), max_drop=0.05, blank_rows=blank)
+                findings.append(f.model_copy(update={"detail": f"{name} vs {label}: {f.detail}"}))
             if id_column and state.task.kind == "predictive":
                 f = required_columns(df, [id_column])
                 findings.append(f.model_copy(update={"detail": f"{name}: {f.detail}"}))

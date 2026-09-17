@@ -34,13 +34,26 @@ def _sample(df: pd.DataFrame, n: int = SAMPLE) -> pd.DataFrame:
 # --- rows and columns ------------------------------------------------------------------------
 
 
-def row_accounting(before: int, after: int, max_drop: float = 0.01, allow_added: bool = False) -> Finding:
-    """Rows lost or gained by a step. Silent drops are how 'clean' steps hide parsing failures."""
+def row_accounting(
+    before: int, after: int, max_drop: float = 0.01, allow_added: bool = False, blank_rows: int = 0
+) -> Finding:
+    """Rows lost or gained by a step. Silent drops are how 'clean' steps hide parsing failures.
+
+    `blank_rows` is the number of empty lines in the input file: a loader that keeps them grows the table by
+    exactly that many rows, which is not a duplicating join.
+    """
     if before == 0:
         return Finding(
             tool="row_accounting", passed=after == 0, detail=f"input empty; output has {after} rows"
         )
     dropped = (before - after) / before
+    if blank_rows and after - before == blank_rows:
+        return Finding(
+            tool="row_accounting",
+            passed=True,
+            detail=f"{after - before:,} more rows than {before:,}: exactly the input's empty lines, kept as "
+            "rows with no values (harmless if later steps drop or ignore them)",
+        )
     if after > before and not allow_added:
         return Finding(
             tool="row_accounting",
