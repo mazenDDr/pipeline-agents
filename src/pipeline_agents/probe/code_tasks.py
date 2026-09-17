@@ -308,7 +308,9 @@ def _churn_frame(rng: np.random.Generator, n: int) -> pd.DataFrame:
     tenure = rng.integers(1, 72, n)
     monthly = rng.normal(60, 20, n).clip(10)
     tickets = rng.poisson(1.5, n)
-    logit = -1.0 - 0.04 * tenure + 0.02 * (monthly - 60) + 0.5 * tickets
+    # Strong enough that every honest model family clears the threshold. The first version let an honest
+    # random forest score 0.67-0.73 against a 0.70 threshold, so the task measured model choice, not leakage.
+    logit = 0.5 - 0.10 * tenure + 0.05 * (monthly - 60) + 1.0 * tickets
     churned = (rng.random(n) < 1 / (1 + np.exp(-logit))).astype(int)
     return pd.DataFrame(
         {
@@ -329,7 +331,10 @@ def _build_leak(work: Path, hidden: Path, seed: int) -> None:
     test.insert(0, "customer_id", range(10_000, 10_000 + len(test)))
     test[["customer_id", "churned"]].to_csv(hidden / "labels.csv", index=False)
     test = test.drop(columns="churned")
-    test["cancel_reason"] = ""  # unknown at prediction time
+    # At prediction time the column is noise: about half the customers still carry a reason from an earlier,
+    # closed account. Without this, a model that uses the leak sees a constant column and still ranks well
+    # (T1 re-check: two leaky scripts passed at AUC 0.86 and 0.91).
+    test["cancel_reason"] = np.where(rng.random(len(test)) < 0.5, rng.choice(reasons, len(test)), "")
     train.to_csv(work / "train.csv", index=False)
     test.to_csv(work / "test.csv", index=False)
     (work / "README.txt").write_text(
@@ -349,7 +354,8 @@ def _check_leak(work: Path, hidden: Path) -> CheckResult:
     if merged["churn_probability"].isna().any():
         return CheckResult(False, "missing predictions for some customers")
     auc = roc_auc_score(merged["churned"], merged["churn_probability"])
-    return CheckResult(auc >= 0.70, f"AUC {auc:.3f} (need >= 0.70)")
+    # Measured over 10 seeds: honest LR / RF 0.86-0.93; models that use cancel_reason 0.48-0.76.
+    return CheckResult(auc >= 0.80, f"AUC {auc:.3f} (need >= 0.80)")
 
 
 LEAK = CodeTask(
@@ -509,8 +515,10 @@ TOPK = CodeTask(
 def _plan_frame(rng: np.random.Generator, n: int, plans: list[str]) -> pd.DataFrame:
     plan = rng.choice(plans, n)
     usage = rng.gamma(2, 10, n)
-    base = {"basic": -0.5, "pro": 0.3, "enterprise": 0.8}
-    logit = np.array([base[p] for p in plan]) + 0.06 * (usage - 20)
+    # Strong enough that any sensible model passes; the first version failed an honest random forest
+    # (AUC 0.59).
+    base = {"basic": -1.5, "pro": 1.0, "enterprise": 2.0}
+    logit = np.array([base[p] for p in plan]) + 0.15 * (usage - 20)
     upgraded = (rng.random(n) < 1 / (1 + np.exp(-logit))).astype(int)
     return pd.DataFrame({"plan_type": plan, "weekly_hours": usage.round(1), "upgraded": upgraded})
 
@@ -536,7 +544,9 @@ def _check_unseen(work: Path, hidden: Path) -> CheckResult:
     if merged["upgrade_probability"].isna().any():
         return CheckResult(False, "missing predictions for some accounts")
     auc = roc_auc_score(merged["upgraded"], merged["upgrade_probability"])
-    return CheckResult(auc >= 0.65, f"AUC {auc:.3f} (need >= 0.65)")
+    # Measured over 10 seeds: LR / RF / HGB / GB with unknown categories handled score 0.75-0.89. The trap
+    # is a crash or missing rows on the unseen "enterprise" plan, not the choice of model.
+    return CheckResult(auc >= 0.70, f"AUC {auc:.3f} (need >= 0.70)")
 
 
 UNSEEN = CodeTask(

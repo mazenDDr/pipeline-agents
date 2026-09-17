@@ -101,7 +101,10 @@ def render(summary: dict) -> str:
         "| tokens / call | truncated |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
-    for r in sorted(summary["rows"], key=lambda r: (-(r["code_pass"] or 0), r["model"], r["mode"])):
+    ranked = sorted(summary["rows"], key=lambda r: (-(r["code_pass"] or 0), r["model"], r["mode"]))
+    for r in ranked:
+        if r["n_code_tasks"] == 0:
+            continue  # skipped modes (see skip_modes in the run config) have speed rows only
         vram = None if r["vram_mib"] is None else r["vram_mib"] / 1024
         rss = None if r["rss_mib"] is None else r["rss_mib"] / 1024
         lo, hi = r["code_pass_ci"]

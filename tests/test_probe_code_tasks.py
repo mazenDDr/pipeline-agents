@@ -43,3 +43,43 @@ def test_broken_fails(task, seed, tmp_path: Path) -> None:
 def test_no_output_fails(tmp_path: Path) -> None:
     _, check = _run(TASKS[0], "pass\n", tmp_path)
     assert not check.passed
+
+
+HONEST_FOREST = {
+    "leaky_column": (
+        "import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\n"
+        "tr, te = pd.read_csv('train.csv'), pd.read_csv('test.csv')\n"
+        "X = ['tenure_months', 'monthly_fee', 'support_tickets']\n"
+        "m = RandomForestClassifier(random_state=0).fit(tr[X], tr['churned'])\n"
+        "pd.DataFrame({'customer_id': te['customer_id'], 'churn_probability': m.predict_proba(te[X])[:, 1]})"
+        ".to_csv('predictions.csv', index=False)\n"
+    ),
+    "unseen_category": (
+        "import pandas as pd\nfrom sklearn.ensemble import RandomForestClassifier\n"
+        "tr, te = pd.read_csv('train.csv'), pd.read_csv('test.csv')\n"
+        "Xtr = pd.get_dummies(tr[['plan_type', 'weekly_hours']])\n"
+        "Xte = pd.get_dummies(te[['plan_type', 'weekly_hours']]).reindex(columns=Xtr.columns, fill_value=0)\n"
+        "m = RandomForestClassifier(random_state=0).fit(Xtr, tr['upgraded'])\n"
+        "pd.DataFrame({'account_id': te['account_id'], 'upgrade_probability': m.predict_proba(Xte)[:, 1]})"
+        ".to_csv('predictions.csv', index=False)\n"
+    ),
+}
+
+
+@pytest.mark.parametrize("task_id", sorted(HONEST_FOREST))
+@pytest.mark.parametrize("seed", [0, 1, 2, 7])
+def test_honest_random_forest_passes(task_id, seed, tmp_path: Path) -> None:
+    """An AUC threshold must not depend on the model family: a leak-free random forest passes."""
+    task = next(t for t in TASKS if t.id == task_id)
+    result, check = _run(task, HONEST_FOREST[task_id], tmp_path, seed)
+    assert result.exit_code == 0, result.stderr
+    assert check.passed, check.detail
+
+
+@pytest.mark.parametrize("script", sorted((Path(__file__).parent / "fixtures" / "probe").glob("leak_*.py")))
+@pytest.mark.parametrize("seed", [0, 7])
+def test_real_leaky_scripts_fail(script: Path, seed, tmp_path: Path) -> None:
+    """Scripts from the probe that used the leaking column must fail, whatever their model family."""
+    task = next(t for t in TASKS if t.id == "leaky_column")
+    _, check = _run(task, script.read_text(), tmp_path, seed)
+    assert not check.passed, check.detail
