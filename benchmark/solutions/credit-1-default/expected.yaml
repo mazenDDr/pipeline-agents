@@ -1,0 +1,4 @@
+reference: pass
+honest_logistic: pass
+broken_first_header: clean_rerun
+broken_numeric_logistic: score
