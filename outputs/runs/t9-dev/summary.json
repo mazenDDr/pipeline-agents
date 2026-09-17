@@ -1,0 +1,242 @@
+{
+  "arms": {
+    "baseline": {
+      "cells": 18,
+      "tasks": 6,
+      "status": {
+        "failed": 2,
+        "succeeded": 16
+      },
+      "success": {
+        "mean": 0.7222222222222222,
+        "ci": [
+          0.4444444444444444,
+          1.0
+        ]
+      },
+      "revisions": {
+        "mean": 0.8888888888888888,
+        "ci": [
+          0.0,
+          2.4444444444444446
+        ]
+      },
+      "model_calls": {
+        "mean": 1.888888888888889,
+        "ci": [
+          1.0,
+          3.4444444444444446
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.001530683333333333,
+        "ci": [
+          0.0005834327916666666,
+          0.003109945375
+        ]
+      },
+      "seconds": {
+        "mean": 91.85000000000001,
+        "ci": [
+          35.34986111111111,
+          184.97277777777776
+        ]
+      }
+    },
+    "multi": {
+      "cells": 18,
+      "tasks": 6,
+      "status": {
+        "needs_human": 6,
+        "succeeded": 12
+      },
+      "success": {
+        "mean": 0.4444444444444444,
+        "ci": [
+          0.1111111111111111,
+          0.8333333333333334
+        ]
+      },
+      "revisions": {
+        "mean": 3.0000000000000004,
+        "ci": [
+          1.3333333333333333,
+          4.666666666666667
+        ]
+      },
+      "model_calls": {
+        "mean": 24.88888888888889,
+        "ci": [
+          14.944444444444445,
+          35.44444444444444
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.009635995,
+        "ci": [
+          0.0054110585,
+          0.014170662833333337
+        ]
+      },
+      "seconds": {
+        "mean": 340.2555555555556,
+        "ci": [
+          185.7261111111111,
+          507.98569444444445
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "adult-1-income": {
+      "baseline": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "predict": 2
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "predict": 3
+        }
+      }
+    },
+    "adult-2-education": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "air-1-co-daily": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "air-2-co-estimate": {
+      "baseline": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "delivered": 2,
+          "predict": 1
+        }
+      }
+    },
+    "bike-1-forecast": {
+      "baseline": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "score": 2
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "score": 3
+        }
+      }
+    },
+    "bike-2-weather": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "success",
+      "difference": 0.27777777777777773,
+      "ci": [
+        0.05555555555555555,
+        0.5555555555555555
+      ],
+      "pairs": 18,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "revisions",
+      "difference": -2.111111111111111,
+      "ci": [
+        -3.6111111111111107,
+        -0.8333333333333334
+      ],
+      "pairs": 18,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "model_calls",
+      "difference": -23.0,
+      "ci": [
+        -32.55694444444445,
+        -13.887499999999994
+      ],
+      "pairs": 18,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "shadow_usd",
+      "difference": -0.008105311666666665,
+      "ci": [
+        -0.011626904541666667,
+        -0.004753106749999999
+      ],
+      "pairs": 18,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "seconds",
+      "difference": -248.40555555555557,
+      "ci": [
+        -363.1051388888889,
+        -143.26569444444445
+      ],
+      "pairs": 18,
+      "real": true
+    }
+  ],
+  "errors": []
+}

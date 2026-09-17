@@ -211,3 +211,16 @@ def test_a_known_code_inside_the_normal_range_is_data() -> None:
     counts = pd.DataFrame({"cnt": RNG.poisson(120, 5000), "casual": RNG.integers(0, 367, 5000)})
     assert (counts == 99).any().all()
     assert missing_and_sentinels(counts).passed
+
+
+def test_leakage_check_survives_categories_whose_targets_are_all_missing() -> None:
+    """Regression from the dev grid: a category with only missing targets crashed the purity computation."""
+    df = pd.DataFrame(
+        {
+            "site": ["a"] * 50 + ["b"] * 50 + ["c"] * 20,
+            "value": RNG.normal(size=120),
+            "target": list(RNG.normal(size=100)) + [np.nan] * 20,
+        }
+    )
+    finding = target_leakage(df, "target")
+    assert finding.passed, finding.detail
