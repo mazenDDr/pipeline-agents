@@ -157,5 +157,12 @@ def revise(deps: Deps, state: RunState) -> Revision:
         "history": record.revisions,
     }
     return call_role(
-        deps, "reviser", context, parse_model(Revision), "low", step.id, len(record.revisions) + 1
+        deps,
+        "reviser",
+        context,
+        parse_model(Revision),
+        "low",
+        step.id,
+        len(record.revisions) + 1,
+        schema=Revision.model_json_schema(),
     ).value

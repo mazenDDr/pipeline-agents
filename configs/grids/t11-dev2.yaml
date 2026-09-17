@@ -1,0 +1,9 @@
+# T11 second dev round: the multi-agent system with the split checks wired in (rows/ids in both halves, and
+# the time order of the halves) and the Reviser's reply constrained to its schema. The baseline is unchanged
+# by both, so its cells from t11-dev are reused for the comparison.
+name: t11-dev2
+tasks: dev
+seeds: [1, 2, 3]
+memory: none
+arms:
+  - {label: multi, system: multi, config: configs/run/default.yaml}
