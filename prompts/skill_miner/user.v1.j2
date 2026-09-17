@@ -1,0 +1,19 @@
+# Task
+
+{{ goal }}
+
+# Steps that were accepted, in order
+{% for step in steps %}
+
+## {{ step.id }} [{{ step.kind }}] {{ step.intent }}
+{% if step.issues %}
+Earlier attempts were rejected for:
+{% for issue in step.issues %}
+- {{ issue }}
+{% endfor %}
+{% endif %}
+Final code:
+```python
+{{ step.code }}
+```
+{% endfor %}

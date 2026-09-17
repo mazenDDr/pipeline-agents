@@ -88,7 +88,9 @@ def execute(deps: Deps, state: RunState) -> StepAttempt:
         "output_files": sorted(_output_files(workspace)),
         "file": file,
         "is_last": state.cursor == len(state.plan.steps) - 1,
-        "memory_hits": [h for h in state.memory_hits if h.step_id in (None, step.id)],
+        # The Executor gets facts about the data and the skills retrieved for this step; past episodes are for
+        # the Planner.
+        "memory_hits": [h for h in state.memory_hits if h.store == "semantic" or h.step_id == step.id],
         "previous": None
         if previous is None
         else {

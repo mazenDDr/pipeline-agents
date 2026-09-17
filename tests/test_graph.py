@@ -319,3 +319,30 @@ def test_resume_from_checkpoint_after_a_crash(tmp_path: Path) -> None:
     assert (
         final.ledger.total.calls == 5
     )  # 4 before the crash, restored from the checkpoint, plus the resumed critic
+
+
+def test_checkpoints_read_back_without_unregistered_type_warnings(tmp_path: Path) -> None:
+    """An explicit allow-list puts LangGraph's deserializer in strict mode (unregistered types are blocked
+    instead of logged and allowed), so a full state must survive the round trip unchanged."""
+    from pipeline_agents.graph.build import open_checkpointer
+    from pipeline_agents.schemas import Finding, MemoryHit, Plan, Revision, StepAttempt, StepRecord, Verdict
+
+    finding = Finding(tool="t", passed=False, detail="d")
+    record = StepRecord(
+        step_id="s1",
+        attempts=[StepAttempt(attempt=1, code="x", exit_code=0)],
+        verdicts=[Verdict(decision="revise", confidence=0.8, findings=[finding])],
+        revisions=[Revision(action="fix", instructions="i")],
+    )
+    state = RunState(
+        run_id="r",
+        task_id="t",
+        goal="g",
+        ledger=Ledger(cap_usd=1),
+        plan=Plan.model_validate(PLAN),
+        steps={"s1": record},
+        memory_hits=[MemoryHit(store="semantic", key="k", text="fact")],
+        task=TaskContext(task_id="t", task_md="m"),
+    )
+    serde = open_checkpointer(tmp_path / "s.sqlite").serde
+    assert serde.loads_typed(serde.dumps_typed(state)) == state

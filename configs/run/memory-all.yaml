@@ -1,5 +1,5 @@
-# Default run: tiered layout, no memory. Loop parameters and temperatures are tuned on dev in T11.
-name: default
+# All three memories on. Otherwise the default run. Loop parameters and temperatures are tuned on dev in T11.
+name: memory-all
 layout: tiered
 model_host: 127.0.0.1
 budget_usd: 0.05  # shadow $ per task; a first guess, measured in T9
@@ -16,4 +16,4 @@ loop:
   max_revisions_per_step: 2
   max_replans: 1
   human_review_threshold: 0.5
-memory: {procedural: false, semantic: false, episodic: false, top_k: 3}
+memory: {procedural: true, semantic: true, episodic: true, top_k: 3}

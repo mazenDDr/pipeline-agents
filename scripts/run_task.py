@@ -2,11 +2,14 @@
 the hidden checker.
 
     python scripts/run_task.py --task bike-2-weather [--system multi|baseline] [--config FILE] [--run-id ID]
-                               [--resume]
+                               [--resume] [--memory-dir DIR] [--record-memory]
 
 On the GPU machine, with the models serving (bash scripts/serve_models.sh tiered). Writes to
 outputs/runs/<run_id>/: workspace/ (the agents' copy), calls.jsonl, cache/, result.json, and state.sqlite
 (multi) or baseline.json (baseline).
+
+Memory: the config's `memory` switches decide what is retrieved from --memory-dir. --record-memory writes this
+run's episode and data facts there afterwards; skills are mined separately (scripts/mine_skills.py).
 """
 
 import argparse
@@ -17,12 +20,14 @@ from datetime import datetime
 from pathlib import Path
 
 from pipeline_agents.agents.baseline import run_baseline
-from pipeline_agents.agents.common import Deps
+from pipeline_agents.agents.common import Deps, ParseError
 from pipeline_agents.bench.checker import check
 from pipeline_agents.bench.spec import TaskSpec
 from pipeline_agents.config import build_observer, load_run_config
 from pipeline_agents.graph.build import run
 from pipeline_agents.harness.registry import PromptRegistry
+from pipeline_agents.memory.store import SentenceEmbedder
+from pipeline_agents.memory.system import MemorySystem, Outcome
 from pipeline_agents.sandbox.runner import default_runner
 from pipeline_agents.schemas import Ledger, RunState, TaskContext
 
@@ -34,6 +39,8 @@ def main() -> None:
     parser.add_argument("--config", default="configs/run/default.yaml")
     parser.add_argument("--run-id", default=None)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--memory-dir", default="outputs/memory/default")
+    parser.add_argument("--record-memory", action="store_true")
     args = parser.parse_args()
     if args.resume and args.system == "baseline":
         raise SystemExit("the baseline has no checkpoints to resume")
@@ -70,7 +77,17 @@ def main() -> None:
         )
 
     observer = build_observer(cfg, run_id, run_dir, cache_dir=run_dir / "cache")
-    deps = Deps(observer=observer, registry=PromptRegistry("prompts"), config=cfg, runner=default_runner())
+    memory = None
+    if args.record_memory or any((cfg.memory.semantic, cfg.memory.procedural, cfg.memory.episodic)):
+        memory = MemorySystem(Path(args.memory_dir), SentenceEmbedder(), cfg.memory, spec.split)
+    memory_used = memory.digest() if memory else None
+    deps = Deps(
+        observer=observer,
+        registry=PromptRegistry("prompts"),
+        config=cfg,
+        runner=default_runner(),
+        memory=memory,
+    )
     start = time.perf_counter()
     if args.system == "baseline":
         final = run_baseline(deps, state.task, workspace.resolve(), run_id)
@@ -102,7 +119,22 @@ def main() -> None:
         "replans": replans,
         "steps": steps,
         "sandboxed": deps.runner.sandboxed,
+        "memory": {
+            "config": cfg.memory.model_dump(),
+            "store_before": memory_used,
+            "hits": [h.model_dump() for h in getattr(final, "memory_hits", [])],
+        },
     }
+    if args.record_memory and args.system == "multi":
+        outcome = Outcome(
+            status=final.status, checker_passed=report.passed, first_failure=report.first_failure
+        )
+        recorded: dict = {"episodes": memory.record_episode(final, outcome)}
+        try:
+            recorded["facts"] = memory.extract_facts(deps, final, outcome)
+        except ParseError as e:
+            recorded["facts_error"] = str(e)
+        result["memory"]["recorded"] = recorded
     (run_dir / "result.json").write_text(json.dumps(result, indent=2))
     print(json.dumps({k: v for k, v in result.items() if k != "by_role"}, indent=2))
 
