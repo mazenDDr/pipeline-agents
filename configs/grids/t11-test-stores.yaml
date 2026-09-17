@@ -1,0 +1,10 @@
+# T11 memory ablation on the test split: one store at a time, against the no-memory `multi` arm of
+# t11-test-core (same tasks and seeds, so the comparison is paired).
+name: t11-test-stores
+tasks: test
+seeds: [1, 2, 3]
+memory: sequence
+arms:
+  - {label: memproc, system: multi, config: configs/run/memory-procedural.yaml}
+  - {label: memsem, system: multi, config: configs/run/memory-semantic.yaml}
+  - {label: memepi, system: multi, config: configs/run/memory-episodic.yaml}

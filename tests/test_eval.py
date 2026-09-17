@@ -123,8 +123,11 @@ def test_grid_resumes_and_records_crashes(tmp_path: Path) -> None:
 
 def test_seeds_and_memory_directories(tmp_path: Path) -> None:
     runner = FakeRunner()
+    mined = tmp_path / "mined"
+    mined.mkdir()
+    (mined / "procedural.jsonl").write_text('{"id": "k1"}\n')
     run_grid(
-        _grid(seeds=[4, 5], memory="sequence"),
+        _grid(seeds=[4, 5], memory="sequence", seed_memory=str(mined)),
         root=tmp_path,
         runner=runner,
         wait_for_servers=lambda: True,
@@ -134,6 +137,9 @@ def test_seeds_and_memory_directories(tmp_path: Path) -> None:
     dirs = {(c[1], c[2]): c[3] for c in runner.calls}
     assert dirs[("multi", 4)] == tmp_path / "g" / "memory" / "multi_s4" != dirs[("baseline", 4)]
     assert all(c[4] for c in runner.calls)
+    for directory in set(dirs.values()):  # dev-mined skills are seeded, facts and episodes start empty
+        assert (directory / "procedural.jsonl").read_text() == '{"id": "k1"}\n'
+        assert not (directory / "semantic.jsonl").exists()
 
 
 def test_grid_waits_for_servers_then_gives_up(tmp_path: Path, monkeypatch) -> None:

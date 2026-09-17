@@ -11,8 +11,9 @@ A grid file (configs/grids/*.yaml) names the tasks, the arms and the seeds:
     memory: none                  # none | sequence
 
 Cells run seed by seed, arm by arm, and within a dataset family the warm-up before the follow-up. With
-`memory: sequence`, each (arm, seed) keeps its own memory directory, starting empty, and records every run
-into it, so a follow-up can learn from its warm-up and nothing crosses between arms or seeds.
+`memory: sequence`, each (arm, seed) keeps its own memory directory and records every run into it, so a
+follow-up can learn from its warm-up and nothing crosses between arms or seeds. Facts and episodes start
+empty; `seed_memory` copies in the procedural skills mined from dev runs.
 
 Every cell writes outputs/runs/<grid>/<label>_<task>_s<seed>/result.json. A cell with a result is skipped
 on re-run (unless it errored and --retry-errors is given); a crashing cell records an error result and the
@@ -49,6 +50,9 @@ class Grid(BaseModel):
     seeds: list[int]
     arms: list[Arm]
     memory: Literal["none", "sequence"] = "none"
+    # A directory holding procedural.jsonl mined from dev runs; copied into each (arm, seed) store before its
+    # first cell, because skills are mined on dev and used on test, while facts and episodes start empty.
+    seed_memory: str | None = None
 
     def task_ids(self) -> list[str]:
         wanted = [t.id for t in TASKS if t.split == self.tasks] if isinstance(self.tasks, str) else self.tasks
@@ -153,6 +157,11 @@ def run_grid(
         memory_dir = (
             grid_dir / "memory" / f"{cell.arm.label}_s{cell.seed}" if grid.memory == "sequence" else None
         )
+        if memory_dir is not None and not memory_dir.exists():
+            memory_dir.mkdir(parents=True)
+            skills = Path(grid.seed_memory) / "procedural.jsonl" if grid.seed_memory else None
+            if skills is not None and skills.exists():
+                shutil.copy(skills, memory_dir / "procedural.jsonl")
         start = time.perf_counter()
         try:
             if run_dir.exists():  # an interrupted cell (no result): start it again from scratch
