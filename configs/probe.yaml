@@ -29,6 +29,9 @@ models:
       no-think: {chat_template_kwargs: {enable_thinking: false}}
   - name: qwen3.6-27b
     file: Qwen3.6-27B-IQ4_XS.gguf
+    # Stopped after 9 rows: 12 tok/s decode and ~5 min per thinking call on this card, too slow to
+    # serve an agent that makes dozens of calls per run. The faster no-think mode still gives a quality row.
+    skip_modes: {think: "too slow for an agent tier (12 tok/s, ~319 s per call); stopped 2026-09-17"}
     modes:
       think: {chat_template_kwargs: {enable_thinking: true}}
       no-think: {chat_template_kwargs: {enable_thinking: false}}

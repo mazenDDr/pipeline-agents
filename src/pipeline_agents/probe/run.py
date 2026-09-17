@@ -434,6 +434,9 @@ def main() -> None:
             print(f"missing {model['file']}, skipping", flush=True)
             continue
         for mode in model["modes"]:
+            if mode in model.get("skip_modes", {}):
+                print(f"skip {model['name']}|{mode}: {model['skip_modes'][mode]}", flush=True)
+                continue
             try:
                 probe.run_model(model, mode, args.code_samples)
             except (RuntimeError, TimeoutError) as e:
