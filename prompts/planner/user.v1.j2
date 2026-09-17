@@ -1,0 +1,29 @@
+# Goal
+
+{{ goal }}
+
+# Data dictionary
+
+{{ data_readme }}
+
+# Data profile
+
+{{ dataset_profile }}
+{% if memory_hits %}
+
+# Notes retrieved from memory
+
+{% for hit in memory_hits %}
+- ({{ hit.store }}) {{ hit.text }}
+{% endfor %}
+{% endif %}
+{% if failed_plan %}
+
+# The previous plan failed
+
+{{ failed_plan }}
+
+Reason: {{ escalation_reason }}
+
+Write a new plan that avoids this failure.
+{% endif %}

@@ -1,0 +1,17 @@
+# Default run: tiered layout, no memory. Loop parameters and temperatures are tuned on dev in T11.
+name: default
+layout: tiered
+model_host: 127.0.0.1
+budget_usd: 0.05  # shadow $ per task; a first guess, measured in T9
+degrade_at: 0.7
+roles:
+  planner: {tier: strong, temperature: 0.7, max_tokens: 4096}
+  executor: {tier: strong, temperature: 0.3, max_tokens: 6144}
+  critic: {tier: strong, temperature: 0.1, max_tokens: 2048}
+  reviser: {tier: strong, temperature: 0.3, max_tokens: 2048}
+  baseline: {tier: strong, temperature: 0.3, max_tokens: 8192}
+loop:
+  max_revisions_per_step: 2
+  max_replans: 1
+  human_review_threshold: 0.5
+memory: {procedural: false, semantic: false, episodic: false, top_k: 3}
