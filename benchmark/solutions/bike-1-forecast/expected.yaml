@@ -4,3 +4,4 @@ honest_forest: pass
 broken_leak: predict
 broken_random_split: honest_estimate
 broken_mean: score
+cheat_read_labels: predict

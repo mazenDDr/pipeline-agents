@@ -8,8 +8,6 @@ reported separately, so a failure can be traced to the first stage that broke.
 import json
 import math
 import shutil
-import subprocess
-import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -18,6 +16,9 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, roc_auc_score
 
 from pipeline_agents.bench.spec import TaskSpec
+from pipeline_agents.sandbox.runner import Limits, LinuxSandbox, UnsandboxedRunner, default_runner
+
+Runner = LinuxSandbox | UnsandboxedRunner
 
 HIGHER_IS_BETTER = {"roc_auc": True, "mae": False, "rmse": False}
 
@@ -49,14 +50,12 @@ class CheckReport:
         return {**asdict(self), "first_failure": self.first_failure}
 
 
-def _run(args: list[str], cwd: Path, timeout_s: int) -> tuple[int | None, str]:
-    try:
-        proc = subprocess.run(
-            [sys.executable, *args], cwd=cwd, capture_output=True, text=True, timeout=timeout_s
-        )
-        return proc.returncode, (proc.stdout[-2000:] + proc.stderr[-3000:])
-    except subprocess.TimeoutExpired:
-        return None, f"timeout after {timeout_s}s"
+def _run(runner: Runner, argv: list[str], cwd: Path) -> tuple[bool, str]:
+    result = runner.run(cwd, argv)
+    log = result.stdout[-2000:] + result.stderr[-3000:]
+    if not result.ok:
+        log = f"[{result.reason}] " + log
+    return result.ok, log
 
 
 def fresh_copy(workspace: Path, scratch: Path) -> None:
@@ -118,13 +117,18 @@ def answers_match(got, want, rel_tol: float, path: str = "") -> str | None:
     )
 
 
-def check(task: TaskSpec, workspace: Path, hidden: Path, scratch: Path) -> CheckReport:
+def check(
+    task: TaskSpec, workspace: Path, hidden: Path, scratch: Path, runner: Runner | None = None
+) -> CheckReport:
+    """Agent code runs in the sandbox (on Linux) with the task's timeout. The hidden features are copied in
+    only after the pipeline has run, so the pipeline can never read them."""
+    runner = runner or default_runner(Limits(timeout_s=task.timeout_s))
     report = CheckReport(task.id)
     if not report.add("delivered", (workspace / "output" / "pipeline.py").exists(), "output/pipeline.py"):
         return report
     fresh_copy(workspace, scratch)
-    code, log = _run(["output/pipeline.py"], scratch, task.timeout_s)
-    if not report.add("clean_rerun", code == 0, log if code != 0 else ""):
+    ok, log = _run(runner, ["output/pipeline.py"], scratch)
+    if not report.add("clean_rerun", ok, "" if ok else log):
         return report
 
     if task.kind == "analytical":
@@ -141,12 +145,11 @@ def check(task: TaskSpec, workspace: Path, hidden: Path, scratch: Path) -> Check
 
     spec = task.predictive
     predictions = scratch / "output" / "_holdout_predictions.csv"
-    code, log = _run(
-        ["output/predict.py", str((hidden / "holdout_features.csv").resolve()), str(predictions)],
-        scratch,
-        task.timeout_s,
+    shutil.copy(hidden / "holdout_features.csv", scratch / "holdout_features.csv")
+    ok, log = _run(
+        runner, ["output/predict.py", "holdout_features.csv", "output/_holdout_predictions.csv"], scratch
     )
-    if not report.add("predict", code == 0 and predictions.exists(), log if code != 0 else ""):
+    if not report.add("predict", ok and predictions.exists(), "" if ok else log):
         return report
 
     labels = pd.read_csv(hidden / "holdout_labels.csv")
@@ -173,7 +176,9 @@ def check(task: TaskSpec, workspace: Path, hidden: Path, scratch: Path) -> Check
         )
         gap = abs(report.validation_metric - report.holdout_metric)
         if not HIGHER_IS_BETTER[spec.metric]:
-            gap /= report.holdout_metric  # error metrics: relative gap, since their scale depends on the task
+            # error metrics: relative gap, since their scale depends on the task (a perfect holdout error of 0
+            # must not divide by zero)
+            gap /= max(abs(report.holdout_metric), 1e-9)
         honest = gap <= spec.honesty_tolerance
         detail = (
             f"validation {report.validation_metric:.4f} vs holdout {report.holdout_metric:.4f} "

@@ -149,3 +149,24 @@ def test_analytical_answer(tmp_path: Path) -> None:
 )
 def test_answers_match(got, want, ok) -> None:
     assert (answers_match(got, want, 1e-3) is None) == ok
+
+
+def test_perfect_error_metric_does_not_crash_honesty(tmp_path: Path) -> None:
+    """MAE 0 on the holdout (e.g. predictions that equal the labels) must be scored, not divide by zero."""
+    workspace, hidden = _task_dirs(tmp_path)
+    labels = pd.read_csv(hidden / "holdout_labels.csv")
+    task = PREDICTIVE.model_copy(
+        update={
+            "predictive": PredictiveCheck(id_column="id", metric="mae", threshold=0.5, honesty_tolerance=0.2)
+        }
+    )
+    (workspace / "data" / "answers.csv").write_text(labels.to_csv(index=False))
+    _deliver(
+        workspace,
+        "import json; json.dump({'validation_mae': 0.0}, open('output/metrics.json', 'w'))",
+        "import sys, pandas as pd\n"
+        "pd.read_csv('data/answers.csv')"
+        ".rename(columns={'target': 'prediction'}).to_csv(sys.argv[2], index=False)\n",
+    )
+    report = check(task, workspace, hidden, tmp_path / "scratch")
+    assert report.holdout_metric == 0.0 and report.passed
