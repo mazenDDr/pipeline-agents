@@ -60,6 +60,7 @@ def test_a_failure_printed_to_stdout_reaches_the_finding(tmp_path: Path) -> None
     smoke = findings[-1]
     assert smoke.tool == "predict_smoke" and not smoke.passed
     assert "model file has the wrong version" in smoke.detail
+    assert "raw data format: one header row, separator ','" in smoke.detail
 
 
 PREDICT_ROW_NUMBERS = PREDICT_OK.replace('"order_id": X["order_id"]', '"order_id": range(len(X))')

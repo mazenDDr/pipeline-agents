@@ -226,3 +226,23 @@ def test_report_summarises_arms_tasks_and_pairs(tmp_path: Path) -> None:
     }
     text = render(summary, "g")
     assert "| multi | 4 |" in text and "answer 2" in text
+
+
+def test_earlier_grid_arms_join_under_a_prefix(tmp_path: Path) -> None:
+    from pipeline_agents.eval.report import load_results
+
+    for name in ("old", "new"):
+        run_grid(
+            _grid(name=name),
+            root=tmp_path,
+            runner=FakeRunner(),
+            wait_for_servers=lambda: True,
+            log=lambda _: None,
+        )
+    results = load_results(tmp_path / "new") + load_results(tmp_path / "old", "t9-")
+    summary = summarize(results)
+    assert list(summary["arms"]) == ["baseline", "multi", "t9-baseline", "t9-multi"]
+    pair = next(
+        c for c in summary["comparisons"] if (c["a"], c["b"], c["metric"]) == ("multi", "t9-multi", "success")
+    )
+    assert pair["pairs"] == 2 and pair["difference"] == 0.0

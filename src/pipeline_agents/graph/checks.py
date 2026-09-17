@@ -174,6 +174,20 @@ def output_tail(result, limit: int = 600) -> str:
     return " | ".join(p for p in parts if p) or "no output at all"
 
 
+def _format_note(features: Path) -> str:
+    """How the smoke input is laid out, so a failing predict.py can be fixed without guessing: the features
+    come in the raw data format, which is often not what the training steps saved."""
+    profile = profile_file(features)
+    header = {0: "NO header row (columns in the data dictionary's order)", 1: "one header row"}.get(
+        profile.header_rows, f"{profile.header_rows} header rows"
+    )
+    first = features.read_text(errors="replace").splitlines()[0][:160] if features.stat().st_size else ""
+    return (
+        f"The features file is in the raw data format: {header}, separator {profile.separator!r}, "
+        f"no target column; first line: {first!r}"
+    )
+
+
 def _smoke_ids(features: Path, id_column: str | None) -> set[str] | None:
     """The id values in the smoke input, when the file can be read with an ordinary header; None otherwise."""
     if not id_column:
@@ -258,7 +272,7 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
                     tool="predict_smoke",
                     passed=False,
                     detail=f"predict.py failed on 200 rows of {features.name} ({smoke.reason}): "
-                    f"{output_tail(smoke)}",
+                    f"{output_tail(smoke)}. {_format_note(features)}",
                 )
             )
             return findings
@@ -289,7 +303,9 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
             Finding(
                 tool="predict_smoke",
                 passed=not problems,
-                detail="; ".join(problems) if problems else f"{len(frame)} varied predictions, one per id",
+                detail="; ".join(problems) + f". {_format_note(features)}"
+                if problems
+                else f"{len(frame)} varied predictions, one per id",
             )
         )
     return findings

@@ -1,0 +1,10 @@
+# T11 screening on dev, after the T10 fixes (row-count reference, raw-format note on predict smoke failures).
+# Both systems re-run because the delivery-check message changed for both. Compared with t9-dev on the same seeds.
+name: t11-dev
+tasks: dev
+seeds: [1, 2, 3]
+memory: none
+arms:
+  - {label: multi, system: multi, config: configs/run/default.yaml}
+  - {label: multi-r2, system: multi, config: configs/run/replans2.yaml}
+  - {label: baseline, system: baseline, config: configs/run/default.yaml}
