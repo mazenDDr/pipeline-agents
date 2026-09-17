@@ -125,13 +125,28 @@ class Ledger(BaseModel):
 # --- the run ---------------------------------------------------------------------------------
 
 
+class TaskContext(BaseModel):
+    """What a run knows about its task, whether it comes from the benchmark or from a user's upload."""
+
+    task_id: str
+    task_md: str  # the goal and the deliverables, as the agent sees them
+    data_readme: str = ""
+    kind: Literal["predictive", "analytical"] | None = None  # None: let the Planner decide (user uploads)
+    id_column: str | None = None
+    metric: str | None = None
+
+
 class RunState(BaseModel):
     run_id: str
     task_id: str
     goal: str
+    task: TaskContext | None = None
+    workspace: str = ""  # the run's copy of the task workspace; step scripts run here
     dataset_profile: str = ""
+    raw_rows: dict[str, int] = {}  # data rows per input file, for row accounting
     plan: Plan | None = None
     plan_history: list[Plan] = []  # every superseded plan, for the re-plan trace
+    archived_steps: list[dict[str, StepRecord]] = []  # the step records of each superseded plan
     cursor: int = 0  # index of the current step in plan.steps
     steps: dict[str, StepRecord] = {}
     replans: int = 0
@@ -139,5 +154,17 @@ class RunState(BaseModel):
     ledger: Ledger
     node_visits: int = 0
     model_calls: int = 0
+    pending_revision: str | None = None  # the Reviser's instructions for the next attempt at the current step
+    escalation_reason: str | None = None  # why the current plan was rejected, for the re-plan
+    infra_retries: int = 0  # consecutive infra failures of the current step
+    retry_node: str | None = None  # a node to run again after a model endpoint failure
+    step_findings: list[Finding] = []  # the validate node's findings for the current attempt
+    deliverable_findings: list[Finding] = []
     status: RunStatus = "running"
     stop_reason: str | None = None
+
+    @property
+    def current_step(self) -> "PlanStep | None":
+        if self.plan is None or self.cursor >= len(self.plan.steps):
+            return None
+        return self.plan.steps[self.cursor]

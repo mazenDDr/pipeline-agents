@@ -17,7 +17,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import roc_auc_score
 
 from pipeline_agents.schemas import Finding
-from pipeline_agents.tools.profile import PLACEHOLDERS, SENTINEL_CANDIDATES, _sentinel_notes
+from pipeline_agents.tools.profile import PLACEHOLDERS, _sentinel_notes
 
 SAMPLE = 20_000
 
@@ -48,7 +48,10 @@ def row_accounting(before: int, after: int, max_drop: float = 0.01, allow_added:
             detail=f"rows grew from {before:,} to {after:,} (+{after - before:,}): duplicated by a join?",
         )
     passed = dropped <= max_drop
-    detail = f"{before:,} rows in, {after:,} out ({dropped:.1%} dropped; allowed {max_drop:.0%})"
+    detail = (
+        f"{before:,} rows in, {after:,} out ({dropped:.1%} dropped; allowed {max_drop:.0%}). "
+        "Expected if the step filters rows on purpose; a problem if it should keep them."
+    )
     return Finding(tool="row_accounting", passed=passed, detail=detail)
 
 
@@ -72,20 +75,12 @@ def missing_and_sentinels(df: pd.DataFrame, columns: list[str] | None = None) ->
                 values = sorted(placeholders.unique().tolist())
                 problems.append(f"{col}: placeholder values {values} in {len(placeholders):,} rows")
         elif pd.api.types.is_numeric_dtype(s) and not pd.api.types.is_bool_dtype(s):
-            numbers = s.dropna()
-            codes = numbers[numbers.isin(SENTINEL_CANDIDATES)]
-            notes = _sentinel_notes(numbers) if len(numbers) else []
+            # Only values far from the rest count. A known code inside the normal range (99 bikes in an
+            # hour) is
+            # data: flagging it made a Critic delete valid rows in the first real run.
+            notes = _sentinel_notes(s.dropna()) if s.notna().any() else []
             if notes:
                 problems.append(f"{col}: {notes[0]}")
-            elif (
-                len(codes)
-                and numbers.nunique() > 2
-                and codes.nunique() == 1
-                and len(codes) / len(numbers) > 0.001
-            ):
-                problems.append(
-                    f"{col}: {len(codes):,} rows equal {codes.iloc[0]:g}, a common missing-value code"
-                )
     detail = "; ".join(problems) if problems else "no missing values, placeholders or sentinel codes"
     return Finding(tool="missing_and_sentinels", passed=not problems, detail=detail)
 

@@ -1,0 +1,39 @@
+# Task
+
+{{ task_md }}
+
+# The step
+
+- id: {{ step.id }} [{{ step.kind }}]
+- intent: {{ step.intent }}
+
+# The attempt
+
+```python
+{{ attempt.code }}
+```
+Exit: {{ attempt.exit_code }} ({{ reason }})
+Printed:
+{{ attempt.stdout }}
+Errors:
+{{ attempt.stderr }}
+
+# The Critic's verdict
+
+Decision: {{ verdict.decision }} (confidence {{ verdict.confidence }})
+{% for issue in verdict.issues %}
+- {{ issue }}
+{% endfor %}
+{% for f in findings if not f.passed %}
+- tool {{ f.tool }}: {{ f.detail }}
+{% endfor %}
+
+# Earlier revisions of this step
+
+{% if history %}
+{% for r in history %}
+- {{ r.action }}: {{ r.instructions }}
+{% endfor %}
+{% else %}
+None.
+{% endif %}
