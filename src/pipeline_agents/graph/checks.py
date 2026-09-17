@@ -253,8 +253,8 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
             if expected is not None and set(frame[state.task.id_column].astype(str)) != expected:
                 shown = frame[state.task.id_column].astype(str).head(3).tolist()
                 problems.append(
-                    f"the ids in the predictions ({shown}...) are not the ids in the input file: row "
-                    "numbers instead of the id column?"
+                    f"the ids in the predictions ({shown}...) are not the ids in the input file: read with "
+                    "the wrong separator or header, or row numbers used instead of the id column?"
                 )
             values = pd.to_numeric(frame["prediction"], errors="coerce")
             if len(frame) > 20 and values.nunique() <= 1:

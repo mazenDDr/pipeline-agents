@@ -1,0 +1,56 @@
+{
+  "run_id": "t8-air-2-followup-r2",
+  "task": "air-2-co-estimate",
+  "status": "needs_human",
+  "stop_reason": "re-plans used up (1): s7 still rejected after 2 revisions: ['delivery check predict_smoke failed: the ids in the predictions ([\"(\\'1;10/03/2004;18.00.00;1360;150;11\\', \\'9;1046;166;1056;113;1692;1268;13\\', \\'6;48\\', \\'9;0\\')\", \"(\\'2;10/03/2004;19.00.00;1292;112;9\\', \\'4;955;103;1174;92;1559;972;13\\', \\'3;47\\', \\'7;0\\')\", \"(\\'3;10/03/2004;20.00.00;1402;88;9\\', \\'0;939;131;1140;114;1555;1074;11\\', \\",
+  "success": false,
+  "model_calls": 58,
+  "shadow_usd": 0.0266853,
+  "replans": 1,
+  "steps": {
+    "s1": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s2": {
+      "attempts": 2,
+      "revisions": 1,
+      "status": "accepted"
+    },
+    "s3": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s4": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s5": {
+      "attempts": 2,
+      "revisions": 1,
+      "status": "accepted"
+    },
+    "s6": {
+      "attempts": 1,
+      "revisions": 0,
+      "status": "accepted"
+    },
+    "s7": {
+      "attempts": 3,
+      "revisions": 2,
+      "status": "escalated"
+    }
+  },
+  "seconds_from_call_log": 886,
+  "checker_first_failure": "coverage",
+  "memory_hits": {
+    "semantic": 8,
+    "procedural": 21,
+    "episodic": 1
+  },
+  "memory_recorded": null,
+  "note": "Same follow-up with 7 skills added. The new smoke check caught predict.py reading the semicolon file with read_csv defaults (ids became whole lines, one constant prediction) three times; the agents did not fix it; needs_human. A retrieved fact said the file uses ';' and decimal commas: retrieved, not applied. The checker then crashed on text ids (fixed); scored by resuming the finished run."
+}

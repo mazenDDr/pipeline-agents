@@ -67,6 +67,12 @@ def fresh_copy(workspace: Path, scratch: Path) -> None:
         shutil.copy(py, scratch / "output" / py.name)
 
 
+def _id_text(ids: pd.Series) -> pd.Series:
+    """7855, "7855", " 7855 " and 7855.0 are the same id."""
+    text = ids.astype(str).str.strip()
+    return text.str.replace(r"\.0+$", "", regex=True)
+
+
 def score(metric: str, y_true: pd.Series, y_pred: pd.Series) -> float:
     if metric == "roc_auc":
         return float(roc_auc_score(y_true, y_pred))
@@ -157,6 +163,10 @@ def check(
     if spec.id_column not in pred.columns or "prediction" not in pred.columns:
         report.add("coverage", False, f"columns {list(pred.columns)}; need {spec.id_column}, prediction")
         return report
+    # Ids are compared as text: a pipeline that writes 7855 as "7855" or 7855.0 must be scored, not crash the
+    # checker (it did, on a real run).
+    labels[spec.id_column] = _id_text(labels[spec.id_column])
+    pred = pred.assign(**{spec.id_column: _id_text(pred[spec.id_column])})
     merged = labels.merge(pred[[spec.id_column, "prediction"]], on=spec.id_column, how="left")
     bad = merged["prediction"].isna() | ~np.isfinite(pd.to_numeric(merged["prediction"], errors="coerce"))
     if not report.add(
