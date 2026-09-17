@@ -1,0 +1,15 @@
+# Shadow prices: what the tokens a run uses would cost from a hosted provider of the same open weights.
+# Nothing is billed; every cost shown by this project is labelled "shadow $". USD per million tokens.
+# Note: at these list prices the cheap model's input tokens cost more than the strong model's. The cheap
+# tier saves on output tokens and on time, not on everything; the ablations report both.
+models:
+  gemma-4-26b-a4b:
+    input_per_mtok: 0.09
+    output_per_mtok: 0.30
+    source: OpenRouter models API, google/gemma-4-26b-a4b-it (paid route)
+    retrieved: 2026-09-17
+  gemma-4-e4b:
+    input_per_mtok: 0.20
+    output_per_mtok: 0.20
+    source: pricepertoken.com listing for google/gemma-4-e4b-it; Fireworks is the only provider (data updated 2026-09-16)
+    retrieved: 2026-09-17

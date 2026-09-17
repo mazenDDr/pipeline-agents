@@ -1,0 +1,26 @@
+# Model serving, chosen in T1 from outputs/runs/t1-probe and outputs/runs/t1-colocate (see docs/model_choice.md).
+# User decision 2026-09-17: two models on the GPU ("tiered"); one model for every role ("single") is kept
+# as an ablation arm. Start a layout on the GPU machine with: bash scripts/serve_models.sh <layout>
+server_binary: /home/mazen/llama.cpp/build-cuda/bin/llama-server  # ~/llama.cpp/build is CPU-only
+model_dir: models/gguf
+common_args: ["-c", "16384", "-np", "1", "-fa", "on", "--jinja", "--reasoning-format", "deepseek", "--fit", "on"]
+
+models:
+  gemma-4-26b-a4b:
+    file: gemma-4-26B-A4B-it-UD-IQ4_XS.gguf
+    # No thinking: code pass 0.94 [0.86, 1.00] at 6.3 s/call; thinking scored 0.86 at 34.5 s/call.
+    request: {chat_template_kwargs: {enable_thinking: false}}
+  gemma-4-e4b:
+    file: gemma-4-E4B-it-Q4_K_M.gguf
+    # No thinking: 0.72 [0.47, 0.94] at 7.9 s/call; thinking 0.75 at 13.7 s/call, not a real difference.
+    request: {chat_template_kwargs: {enable_thinking: false}}
+
+layouts:
+  tiered:  # measured: strong decode 41 tok/s, cheap 82 tok/s, 13.2 GB VRAM
+    strong: {model: gemma-4-26b-a4b, port: 8081, args: ["--fit-target", "5120"]}  # leaves room for the cheap model
+    cheap: {model: gemma-4-e4b, port: 8082, args: []}
+  single:  # measured: decode 76 tok/s, 13.6 GB VRAM; both tiers point at the same server
+    strong: {model: gemma-4-26b-a4b, port: 8081, args: []}
+    cheap: {model: gemma-4-26b-a4b, port: 8081, args: []}
+
+sampling: {temperature: 0.6, top_p: 0.95, top_k: 20}  # per-role temperatures are tuned later (T11)
