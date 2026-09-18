@@ -16,7 +16,7 @@
       "expected": "pass",
       "got": "pass",
       "holdout_metric": 50.01918975567641,
-      "validation_metric": 50.17665531647123
+      "validation_metric": 50.176655316471226
     },
     {
       "task": "bike-1-forecast",
