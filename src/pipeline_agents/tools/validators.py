@@ -214,8 +214,11 @@ def split_overlap(
     problems = []
     shared_cols = [c for c in train.columns if c in valid.columns]
     dup = pd.merge(train[shared_cols].drop_duplicates(), valid[shared_cols].drop_duplicates(), how="inner")
-    if len(dup):
-        problems.append(f"{len(dup):,} identical rows in both")
+    share = len(dup) / max(min(len(train), len(valid)), 1)
+    # A handful of identical rows is normal in real data (two records that happen to match); a large share
+    # means the same rows were put in both halves.
+    if share > 0.01:
+        problems.append(f"{len(dup):,} identical rows in both ({share:.1%} of the smaller half)")
     for col, what in ((id_column, "ids"), (group_column, "groups")):
         if col and col in train and col in valid:
             shared = set(train[col].dropna()) & set(valid[col].dropna())

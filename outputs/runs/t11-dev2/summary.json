@@ -1,0 +1,103 @@
+{
+  "arms": {
+    "multi": {
+      "cells": 18,
+      "tasks": 6,
+      "status": {
+        "succeeded": 17,
+        "needs_human": 1
+      },
+      "success": {
+        "mean": 0.611111111111111,
+        "ci": [
+          0.3333333333333333,
+          0.8888888888888888
+        ]
+      },
+      "revisions": {
+        "mean": 2.3333333333333335,
+        "ci": [
+          1.0,
+          4.166666666666667
+        ]
+      },
+      "model_calls": {
+        "mean": 21.88888888888889,
+        "ci": [
+          14.276388888888889,
+          31.277777777777782
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.00843198,
+        "ci": [
+          0.004811027249999999,
+          0.012901653624999999
+        ]
+      },
+      "seconds": {
+        "mean": 303.64444444444445,
+        "ci": [
+          175.2547222222222,
+          458.9952777777777
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "adult-1-income": {
+      "multi": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "score": 2
+        }
+      }
+    },
+    "adult-2-education": {
+      "multi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "air-1-co-daily": {
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "delivered": 1
+        }
+      }
+    },
+    "air-2-co-estimate": {
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      }
+    },
+    "bike-1-forecast": {
+      "multi": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "score": 2
+        }
+      }
+    },
+    "bike-2-weather": {
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      }
+    }
+  },
+  "comparisons": [],
+  "errors": []
+}

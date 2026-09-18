@@ -21,7 +21,9 @@ from pipeline_agents.tools.validators import (
     numbers_stored_as_text,
     required_columns,
     row_accounting,
+    split_overlap,
     target_leakage,
+    temporal_order,
 )
 
 MAX_TABLES = 3
@@ -32,6 +34,61 @@ def _read_table(path: Path) -> pd.DataFrame | None:
         return pd.read_csv(path, low_memory=False)
     except Exception:  # an unreadable table is itself worth a finding, not a crash
         return None
+
+
+TRAIN_NAMES = ("train",)
+VALID_NAMES = ("valid", "val", "test", "holdout", "eval")
+
+
+def _split_pair(tables: list[Path]) -> tuple[Path, Path] | None:
+    """The two files a split step wrote, by name: one training, one validation."""
+    train = [p for p in tables if any(n in p.stem.lower() for n in TRAIN_NAMES)]
+    valid = [p for p in tables if any(n in p.stem.lower() for n in VALID_NAMES) and p not in train]
+    return (train[0], valid[0]) if train and valid else None
+
+
+def _time_column(train: pd.DataFrame, valid: pd.DataFrame) -> str | None:
+    """A column that reads as a date in both halves: then the halves have a time order to check."""
+    for col in [c for c in train.columns if c in valid.columns]:
+        if train[col].dtype.kind in "biufc":
+            continue
+        pair = [pd.to_datetime(frame[col], errors="coerce", format="mixed") for frame in (train, valid)]
+        if all(times.notna().mean() > 0.9 for times in pair) and all(len(times) for times in pair):
+            return col
+    return None
+
+
+def _split_checks(state: RunState, tables: list[Path]) -> list[Finding]:
+    pair = _split_pair(tables)
+    if pair is None:
+        return []
+    train, valid = (_read_table(p) for p in pair)
+    if train is None or valid is None or train.empty or valid.empty:
+        return []
+    names = f"{pair[0].name} and {pair[1].name}"
+    findings = [
+        split_overlap(train, valid, id_column=state.task.id_column).model_copy(
+            update={"detail": f"{names}: {split_overlap(train, valid, state.task.id_column).detail}"}
+        )
+    ]
+    col = _time_column(train, valid)
+    if col:
+        times = [pd.to_datetime(frame[col], errors="coerce", format="mixed") for frame in (train, valid)]
+        f = temporal_order(*times)
+        findings.append(
+            f.model_copy(
+                update={
+                    "detail": f"{names} by {col}: {f.detail}"
+                    + (
+                        ""
+                        if f.passed
+                        else ". A split that mixes the periods measures the wrong thing when "
+                        "the task is judged on later data; it is fine when it is not."
+                    )
+                }
+            )
+        )
+    return findings
 
 
 def _row_reference(state: RunState, step: PlanStep) -> tuple[int, str, int] | None:
@@ -90,6 +147,9 @@ def step_checks(state: RunState, step: PlanStep, attempt: StepAttempt) -> list[F
         if target and target in df.columns and step.kind in ("clean", "feature", "split", "train"):
             f = target_leakage(df, target, exclude=[c for c in [id_column] if c])
             findings.append(f.model_copy(update={"detail": f"{name}: {f.detail}"}))
+
+    if step.kind == "split":
+        findings += _split_checks(state, [output / a for a in written if a.endswith(".csv")])
 
     if "metrics.json" in written:
         try:
@@ -172,6 +232,20 @@ def output_tail(result, limit: int = 600) -> str:
         f"stdout: {result.stdout[-limit:]}" if result.stdout.strip() else "",
     ]
     return " | ".join(p for p in parts if p) or "no output at all"
+
+
+def _format_note(features: Path) -> str:
+    """How the smoke input is laid out, so a failing predict.py can be fixed without guessing: the features
+    come in the raw data format, which is often not what the training steps saved."""
+    profile = profile_file(features)
+    header = {0: "NO header row (columns in the data dictionary's order)", 1: "one header row"}.get(
+        profile.header_rows, f"{profile.header_rows} header rows"
+    )
+    first = features.read_text(errors="replace").splitlines()[0][:160] if features.stat().st_size else ""
+    return (
+        f"The features file is in the raw data format: {header}, separator {profile.separator!r}, "
+        f"no target column; first line: {first!r}"
+    )
 
 
 def _smoke_ids(features: Path, id_column: str | None) -> set[str] | None:
@@ -258,7 +332,7 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
                     tool="predict_smoke",
                     passed=False,
                     detail=f"predict.py failed on 200 rows of {features.name} ({smoke.reason}): "
-                    f"{output_tail(smoke)}",
+                    f"{output_tail(smoke)}. {_format_note(features)}",
                 )
             )
             return findings
@@ -289,7 +363,9 @@ def deliver_checks(state: RunState, runner, target_column: str | None = None) ->
             Finding(
                 tool="predict_smoke",
                 passed=not problems,
-                detail="; ".join(problems) if problems else f"{len(frame)} varied predictions, one per id",
+                detail="; ".join(problems) + f". {_format_note(features)}"
+                if problems
+                else f"{len(frame)} varied predictions, one per id",
             )
         )
     return findings

@@ -1,0 +1,483 @@
+{
+  "arms": {
+    "baseline": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 23,
+        "failed": 1
+      },
+      "success": {
+        "mean": 0.875,
+        "ci": [
+          0.6666666666666666,
+          1.0
+        ]
+      },
+      "revisions": {
+        "mean": 0.8333333333333333,
+        "ci": [
+          0.08333333333333333,
+          1.8333333333333333
+        ]
+      },
+      "model_calls": {
+        "mean": 1.8333333333333335,
+        "ci": [
+          1.0833333333333335,
+          2.833333333333333
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.001630515,
+        "ci": [
+          0.0007288544375,
+          0.00282716096875
+        ]
+      },
+      "seconds": {
+        "mean": 152.94583333333333,
+        "ci": [
+          50.861875,
+          345.98125000000005
+        ]
+      }
+    },
+    "memall": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 20,
+        "needs_human": 3,
+        "failed": 1
+      },
+      "success": {
+        "mean": 0.7083333333333333,
+        "ci": [
+          0.45833333333333326,
+          0.9177083333333371
+        ]
+      },
+      "revisions": {
+        "mean": 2.5416666666666665,
+        "ci": [
+          1.0416666666666667,
+          4.291666666666667
+        ]
+      },
+      "model_calls": {
+        "mean": 20.916666666666664,
+        "ci": [
+          13.165625,
+          29.584375
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.00933935625,
+        "ci": [
+          0.005443144562499999,
+          0.01370246321875
+        ]
+      },
+      "seconds": {
+        "mean": 363.04583333333335,
+        "ci": [
+          213.2327083333333,
+          534.6310416666668
+        ]
+      }
+    },
+    "multi": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 17,
+        "needs_human": 5,
+        "failed": 2
+      },
+      "success": {
+        "mean": 0.5,
+        "ci": [
+          0.20833333333333331,
+          0.7916666666666666
+        ]
+      },
+      "revisions": {
+        "mean": 3.2916666666666665,
+        "ci": [
+          1.2083333333333335,
+          5.833333333333333
+        ]
+      },
+      "model_calls": {
+        "mean": 22.958333333333336,
+        "ci": [
+          13.25,
+          33.960416666666674
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.009700648749999999,
+        "ci": [
+          0.005190309875000001,
+          0.0147599648125
+        ]
+      },
+      "seconds": {
+        "mean": 372.53333333333336,
+        "ci": [
+          200.88333333333335,
+          569.861875
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "bank-1-subscribe": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "delivered": 1
+        }
+      },
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      }
+    },
+    "bank-2-previous-campaign": {
+      "baseline": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "answer": 2
+        }
+      },
+      "memall": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      }
+    },
+    "credit-1-default": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "predict": 1
+        }
+      }
+    },
+    "credit-2-education": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "diabetes-1-readmit": {
+      "baseline": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "failed": 1
+        }
+      },
+      "memall": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "delivered": 2
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "predict": 1,
+          "delivered": 2
+        }
+      }
+    },
+    "diabetes-2-age-rates": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "multi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "retail-1-monthly-revenue": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "answer": 2
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "answer": 3
+        }
+      }
+    },
+    "retail-2-repeat-buyers": {
+      "baseline": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memall": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "honest_estimate": 1,
+          "delivered": 1
+        }
+      },
+      "multi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "delivered": 1,
+          "predict": 2
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "a": "baseline",
+      "b": "memall",
+      "metric": "success",
+      "difference": 0.16666666666666666,
+      "ci": [
+        -0.16666666666666666,
+        0.5
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "baseline",
+      "b": "memall",
+      "metric": "revisions",
+      "difference": -1.708333333333333,
+      "ci": [
+        -3.501041666666666,
+        -0.25
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "memall",
+      "metric": "model_calls",
+      "difference": -19.083333333333332,
+      "ci": [
+        -27.501041666666666,
+        -11.832291666666661
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "memall",
+      "metric": "shadow_usd",
+      "difference": -0.007708841249999999,
+      "ci": [
+        -0.01177860975,
+        -0.004268673656249999
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "memall",
+      "metric": "seconds",
+      "difference": -210.10000000000002,
+      "ci": [
+        -388.2965625,
+        -18.836979166666666
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "success",
+      "difference": 0.375,
+      "ci": [
+        0.041666666666666664,
+        0.7083333333333333
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "revisions",
+      "difference": -2.4583333333333335,
+      "ci": [
+        -4.75,
+        -0.6666666666666666
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "model_calls",
+      "difference": -21.125,
+      "ci": [
+        -31.66770833333333,
+        -11.957291666666661
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "shadow_usd",
+      "difference": -0.00807013375,
+      "ci": [
+        -0.012577450437499998,
+        -0.00407364621875
+      ],
+      "pairs": 24,
+      "real": true
+    },
+    {
+      "a": "baseline",
+      "b": "multi",
+      "metric": "seconds",
+      "difference": -219.58749999999998,
+      "ci": [
+        -419.53875,
+        4.078333333333353
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memall",
+      "b": "multi",
+      "metric": "success",
+      "difference": 0.20833333333333331,
+      "ci": [
+        0.0,
+        0.41666666666666663
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memall",
+      "b": "multi",
+      "metric": "revisions",
+      "difference": -0.75,
+      "ci": [
+        -2.083333333333333,
+        0.4583333333333333
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memall",
+      "b": "multi",
+      "metric": "model_calls",
+      "difference": -2.041666666666667,
+      "ci": [
+        -7.25,
+        3.0010416666666706
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memall",
+      "b": "multi",
+      "metric": "shadow_usd",
+      "difference": -0.0003612925000000002,
+      "ci": [
+        -0.0027175089687500003,
+        0.0019346675000000005
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memall",
+      "b": "multi",
+      "metric": "seconds",
+      "difference": -9.487499999999988,
+      "ci": [
+        -100.59156249999998,
+        72.20770833333336
+      ],
+      "pairs": 24,
+      "real": false
+    }
+  ],
+  "errors": []
+}

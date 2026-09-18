@@ -1,8 +1,10 @@
 """Summarise a grid (T9): per arm, per task, and paired comparisons between arms.
 
-    python -m pipeline_agents.eval.report outputs/runs/<grid>
+    python -m pipeline_agents.eval.report outputs/runs/<grid> [outputs/runs/<earlier grid>:<prefix> ...]
 
 Writes summary.json and report.md into the grid directory. Error cells count as failures and are listed.
+Arms of an earlier grid on the same tasks and seeds can be added under a prefix (`t9-dev:t9-` turns its
+`multi` arm into `t9-multi`) to pair a changed system with the version before the change.
 """
 
 import json
@@ -22,12 +24,13 @@ METRICS = [
 ]
 
 
-def load_results(grid_dir: Path) -> list[dict]:
-    return [json.loads(p.read_text()) for p in sorted(grid_dir.glob("*/result.json"))]
+def load_results(grid_dir: Path, prefix: str = "") -> list[dict]:
+    results = [json.loads(p.read_text()) for p in sorted(grid_dir.glob("*/result.json"))]
+    return [{**r, "arm": prefix + r["run_id"].split("_", 1)[0]} for r in results]
 
 
 def _label(result: dict) -> str:
-    return result["run_id"].split("_", 1)[0]
+    return result.get("arm") or result["run_id"].split("_", 1)[0]
 
 
 def _by_task(results: list[dict], metric: str) -> dict[str, list[float]]:
@@ -151,7 +154,11 @@ def render(summary: dict, grid_name: str) -> str:
 
 def main() -> None:
     grid_dir = Path(sys.argv[1])
-    summary = summarize(load_results(grid_dir))
+    results = load_results(grid_dir)
+    for extra in sys.argv[2:]:
+        path, _, prefix = extra.partition(":")
+        results += load_results(Path(path), prefix)
+    summary = summarize(results)
     (grid_dir / "summary.json").write_text(json.dumps(summary, indent=2))
     (grid_dir / "report.md").write_text(render(summary, grid_dir.name))
     print(render(summary, grid_dir.name))

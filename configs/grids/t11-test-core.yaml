@@ -1,0 +1,12 @@
+# T11 on the test split: does the multi-agent structure beat one model, and does memory help?
+# `memory: sequence` gives each (arm, seed) its own store, starting empty, so a follow-up task can learn from
+# its family's warm-up run and nothing crosses between arms or seeds.
+name: t11-test-core
+tasks: test
+seeds: [1, 2, 3]
+memory: sequence
+seed_memory: outputs/memory/t11-dev-skills  # 36 skills mined from the t11-dev2 dev runs
+arms:
+  - {label: baseline, system: baseline, config: configs/run/default.yaml}
+  - {label: multi, system: multi, config: configs/run/default.yaml}
+  - {label: memall, system: multi, config: configs/run/memory-all.yaml}

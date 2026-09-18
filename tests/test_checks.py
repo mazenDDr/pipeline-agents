@@ -60,6 +60,7 @@ def test_a_failure_printed_to_stdout_reaches_the_finding(tmp_path: Path) -> None
     smoke = findings[-1]
     assert smoke.tool == "predict_smoke" and not smoke.passed
     assert "model file has the wrong version" in smoke.detail
+    assert "raw data format: one header row, separator ','" in smoke.detail
 
 
 PREDICT_ROW_NUMBERS = PREDICT_OK.replace('"order_id": X["order_id"]', '"order_id": range(len(X))')
@@ -127,3 +128,56 @@ def test_row_accounting_compares_with_the_previous_accepted_step(tmp_path: Path)
     _, findings = _two_steps(tmp_path / "b", s2_rows=100)
     [rows] = [f for f in findings if f.tool == "row_accounting"]
     assert not rows.passed and "150 rows in, 100 out" in rows.detail
+
+
+def _split_findings(tmp_path: Path, shuffled: bool) -> list:
+    """A split step that writes train.csv and val.csv, either by date or shuffled across the whole period."""
+    import pandas as pd
+
+    from pipeline_agents.graph.checks import step_checks
+    from pipeline_agents.schemas import StepAttempt
+
+    ws = tmp_path / "workspace"
+    (ws / "output").mkdir(parents=True)
+    frame = pd.DataFrame(
+        {
+            "order_id": range(400),
+            "dteday": pd.date_range("2011-01-01", periods=400, freq="D").astype(str),
+            "amount": range(400),
+        }
+    )
+    if shuffled:
+        frame = frame.sample(frac=1, random_state=0)
+        train, val = frame.iloc[:300], frame.iloc[300:]
+    else:
+        train, val = frame.iloc[:300], frame.iloc[300:]
+    train.to_csv(ws / "output" / "train.csv", index=False)
+    val.to_csv(ws / "output" / "val.csv", index=False)
+    plan = Plan(
+        goal_type="predictive",
+        target_column="amount",
+        steps=[{"id": "s1", "kind": "split", "intent": "split the data", "acceptance_checks": ["x"]}],
+    )
+    task = TaskContext(
+        task_id="toy", task_md="forecast", kind="predictive", id_column="order_id", metric="mae"
+    )
+    state = RunState(
+        run_id="r", task_id="toy", goal="g", task=task, workspace=str(ws), plan=plan, ledger=Ledger(cap_usd=1)
+    )
+    attempt = StepAttempt(attempt=1, code="", exit_code=0, artifacts=["train.csv", "val.csv"])
+    return step_checks(state, plan.steps[0], attempt)
+
+
+def test_a_random_split_fails_the_time_order_check(tmp_path: Path) -> None:
+    findings = {f.tool: f for f in _split_findings(tmp_path / "shuffled", shuffled=True)}
+    assert findings["split_overlap"].passed  # no row or id is in both halves
+    assert not findings["temporal_order"].passed
+    assert (
+        "dteday" in findings["temporal_order"].detail
+        and "judged on later data" in findings["temporal_order"].detail
+    )
+
+
+def test_a_split_by_date_passes(tmp_path: Path) -> None:
+    findings = {f.tool: f for f in _split_findings(tmp_path / "by-date", shuffled=False)}
+    assert findings["split_overlap"].passed and findings["temporal_order"].passed

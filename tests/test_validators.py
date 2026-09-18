@@ -139,7 +139,11 @@ def test_split_overlap() -> None:
     assert split_overlap(train, valid, id_column="customer_id").passed
     leaky = pd.concat([valid, train.iloc[:10]])
     finding = split_overlap(train, leaky, id_column="customer_id")
-    assert not finding.passed and "10 identical rows" in finding.detail and "10 ids" in finding.detail
+    assert not finding.passed and "10 ids" in finding.detail
+    # A couple of records that happen to match is not leakage; the same rows in both halves is.
+    rows = pd.DataFrame({"x": range(2000)})
+    assert split_overlap(rows.iloc[:1000], rows.iloc[998:]).passed  # 2 rows in both: coincidence
+    assert not split_overlap(rows.iloc[:1000], rows.iloc[900:]).passed  # 100 rows in both: the same records
     patients = pd.DataFrame({"patient": [1, 1, 2, 3], "x": [1, 2, 3, 4]})
     assert not split_overlap(patients.iloc[:1], patients.iloc[1:], group_column="patient").passed
 

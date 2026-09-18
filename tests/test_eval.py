@@ -123,8 +123,11 @@ def test_grid_resumes_and_records_crashes(tmp_path: Path) -> None:
 
 def test_seeds_and_memory_directories(tmp_path: Path) -> None:
     runner = FakeRunner()
+    mined = tmp_path / "mined"
+    mined.mkdir()
+    (mined / "procedural.jsonl").write_text('{"id": "k1"}\n')
     run_grid(
-        _grid(seeds=[4, 5], memory="sequence"),
+        _grid(seeds=[4, 5], memory="sequence", seed_memory=str(mined)),
         root=tmp_path,
         runner=runner,
         wait_for_servers=lambda: True,
@@ -134,6 +137,9 @@ def test_seeds_and_memory_directories(tmp_path: Path) -> None:
     dirs = {(c[1], c[2]): c[3] for c in runner.calls}
     assert dirs[("multi", 4)] == tmp_path / "g" / "memory" / "multi_s4" != dirs[("baseline", 4)]
     assert all(c[4] for c in runner.calls)
+    for directory in set(dirs.values()):  # dev-mined skills are seeded, facts and episodes start empty
+        assert (directory / "procedural.jsonl").read_text() == '{"id": "k1"}\n'
+        assert not (directory / "semantic.jsonl").exists()
 
 
 def test_grid_waits_for_servers_then_gives_up(tmp_path: Path, monkeypatch) -> None:
@@ -226,3 +232,23 @@ def test_report_summarises_arms_tasks_and_pairs(tmp_path: Path) -> None:
     }
     text = render(summary, "g")
     assert "| multi | 4 |" in text and "answer 2" in text
+
+
+def test_earlier_grid_arms_join_under_a_prefix(tmp_path: Path) -> None:
+    from pipeline_agents.eval.report import load_results
+
+    for name in ("old", "new"):
+        run_grid(
+            _grid(name=name),
+            root=tmp_path,
+            runner=FakeRunner(),
+            wait_for_servers=lambda: True,
+            log=lambda _: None,
+        )
+    results = load_results(tmp_path / "new") + load_results(tmp_path / "old", "t9-")
+    summary = summarize(results)
+    assert list(summary["arms"]) == ["baseline", "multi", "t9-baseline", "t9-multi"]
+    pair = next(
+        c for c in summary["comparisons"] if (c["a"], c["b"], c["metric"]) == ("multi", "t9-multi", "success")
+    )
+    assert pair["pairs"] == 2 and pair["difference"] == 0.0
