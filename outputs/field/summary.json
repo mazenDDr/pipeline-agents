@@ -1,0 +1,94 @@
+[
+  {
+    "task": "wine-quality",
+    "system": "multi",
+    "kind": "predictive",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 207.3,
+    "model_calls": 16,
+    "shadow_usd": 0.00492,
+    "score": {
+      "passed": true,
+      "detail": "mae 0.4485 over 980 held-back wines",
+      "metric": 0.4485102040816326
+    },
+    "success": true
+  },
+  {
+    "task": "wine-quality",
+    "system": "baseline",
+    "kind": "predictive",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 90.2,
+    "model_calls": 2,
+    "shadow_usd": 0.00131,
+    "score": {
+      "passed": true,
+      "detail": "mae 0.4467 over 980 held-back wines",
+      "metric": 0.446719387755102
+    },
+    "success": true
+  },
+  {
+    "task": "student-grades",
+    "system": "multi",
+    "kind": "analytical",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 99.6,
+    "model_calls": 9,
+    "shadow_usd": 0.00268,
+    "score": {
+      "passed": true,
+      "detail": "every number matches the reference"
+    },
+    "success": true
+  },
+  {
+    "task": "student-grades",
+    "system": "baseline",
+    "kind": "analytical",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 26.3,
+    "model_calls": 1,
+    "shadow_usd": 0.00045,
+    "score": {
+      "passed": true,
+      "detail": "every number matches the reference"
+    },
+    "success": true
+  },
+  {
+    "task": "household-power",
+    "system": "multi",
+    "kind": "analytical",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 310.9,
+    "model_calls": 9,
+    "shadow_usd": 0.00251,
+    "score": {
+      "passed": true,
+      "detail": "every number matches the reference"
+    },
+    "success": true
+  },
+  {
+    "task": "household-power",
+    "system": "baseline",
+    "kind": "analytical",
+    "status": "succeeded",
+    "stop_reason": "delivered",
+    "seconds": 136.8,
+    "model_calls": 1,
+    "shadow_usd": 0.00049,
+    "score": {
+      "passed": true,
+      "detail": "every number matches the reference"
+    },
+    "success": true
+  }
+]
