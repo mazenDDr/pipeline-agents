@@ -28,3 +28,8 @@ outputs/trust/*/*
 !outputs/trust/*/checker_audit.json
 !outputs/trust/*/population.json
 !outputs/trust/*/scores.json
+!outputs/field/
+outputs/field/*
+!outputs/field/summary.json
+!outputs/field/reference.json
+!outputs/field/notes.json
