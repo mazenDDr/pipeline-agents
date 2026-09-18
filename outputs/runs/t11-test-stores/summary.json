@@ -1,0 +1,497 @@
+{
+  "arms": {
+    "memepi": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 20,
+        "needs_human": 4
+      },
+      "success": {
+        "mean": 0.625,
+        "ci": [
+          0.375,
+          0.875
+        ]
+      },
+      "revisions": {
+        "mean": 2.708333333333333,
+        "ci": [
+          1.0833333333333333,
+          4.375
+        ]
+      },
+      "model_calls": {
+        "mean": 21.666666666666664,
+        "ci": [
+          12.875,
+          30.667708333333337
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.00937311875,
+        "ci": [
+          0.0050356063749999996,
+          0.01384385046875
+        ]
+      },
+      "seconds": {
+        "mean": 360.3333333333333,
+        "ci": [
+          199.32510416666668,
+          522.4655208333334
+        ]
+      }
+    },
+    "memproc": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 18,
+        "needs_human": 4,
+        "failed": 2
+      },
+      "success": {
+        "mean": 0.4583333333333333,
+        "ci": [
+          0.16666666666666666,
+          0.75
+        ]
+      },
+      "revisions": {
+        "mean": 2.6666666666666665,
+        "ci": [
+          0.875,
+          4.75
+        ]
+      },
+      "model_calls": {
+        "mean": 20.541666666666664,
+        "ci": [
+          12.416666666666668,
+          29.833333333333332
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.00954971,
+        "ci": [
+          0.00503859175,
+          0.014529751624999998
+        ]
+      },
+      "seconds": {
+        "mean": 390.90833333333336,
+        "ci": [
+          208.33916666666667,
+          595.7888541666666
+        ]
+      }
+    },
+    "memsem": {
+      "cells": 24,
+      "tasks": 8,
+      "status": {
+        "succeeded": 19,
+        "needs_human": 3,
+        "failed": 2
+      },
+      "success": {
+        "mean": 0.5833333333333333,
+        "ci": [
+          0.29166666666666663,
+          0.875
+        ]
+      },
+      "revisions": {
+        "mean": 2.6666666666666665,
+        "ci": [
+          1.0833333333333333,
+          4.458333333333334
+        ]
+      },
+      "model_calls": {
+        "mean": 21.25,
+        "ci": [
+          13.083333333333334,
+          30.334375000000005
+        ]
+      },
+      "shadow_usd": {
+        "mean": 0.009087313750000001,
+        "ci": [
+          0.00528905021875,
+          0.013304116843750002
+        ]
+      },
+      "seconds": {
+        "mean": 359.1041666666667,
+        "ci": [
+          208.72968749999998,
+          523.2179166666667
+        ]
+      }
+    }
+  },
+  "tasks": {
+    "bank-1-subscribe": {
+      "memepi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      },
+      "memproc": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "delivered": 1
+        }
+      },
+      "memsem": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      }
+    },
+    "bank-2-previous-campaign": {
+      "memepi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      },
+      "memproc": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      },
+      "memsem": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "answer": 1
+        }
+      }
+    },
+    "credit-1-default": {
+      "memepi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "delivered": 1
+        }
+      },
+      "memproc": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "delivered": 1,
+          "score": 1
+        }
+      },
+      "memsem": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "predict": 1
+        }
+      }
+    },
+    "credit-2-education": {
+      "memepi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memproc": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memsem": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "diabetes-1-readmit": {
+      "memepi": {
+        "success": 1,
+        "cells": 3,
+        "failures": {
+          "delivered": 1,
+          "score": 1
+        }
+      },
+      "memproc": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "delivered": 2,
+          "score": 1
+        }
+      },
+      "memsem": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "predict": 1,
+          "delivered": 2
+        }
+      }
+    },
+    "diabetes-2-age-rates": {
+      "memepi": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memproc": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      },
+      "memsem": {
+        "success": 3,
+        "cells": 3,
+        "failures": {}
+      }
+    },
+    "retail-1-monthly-revenue": {
+      "memepi": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "answer": 3
+        }
+      },
+      "memproc": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "answer": 3
+        }
+      },
+      "memsem": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "answer": 3
+        }
+      }
+    },
+    "retail-2-repeat-buyers": {
+      "memepi": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "delivered": 1
+        }
+      },
+      "memproc": {
+        "success": 0,
+        "cells": 3,
+        "failures": {
+          "honest_estimate": 1,
+          "predict": 2
+        }
+      },
+      "memsem": {
+        "success": 2,
+        "cells": 3,
+        "failures": {
+          "score": 1
+        }
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "a": "memepi",
+      "b": "memproc",
+      "metric": "success",
+      "difference": 0.16666666666666666,
+      "ci": [
+        -0.08333333333333334,
+        0.41666666666666663
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memproc",
+      "metric": "revisions",
+      "difference": 0.04166666666666666,
+      "ci": [
+        -1.375,
+        1.1666666666666667
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memproc",
+      "metric": "model_calls",
+      "difference": 1.125,
+      "ci": [
+        -5.460416666666666,
+        7.00104166666667
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memproc",
+      "metric": "shadow_usd",
+      "difference": -0.00017659125000000017,
+      "ci": [
+        -0.0035659732812500003,
+        0.002464446218749999
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memproc",
+      "metric": "seconds",
+      "difference": -30.575,
+      "ci": [
+        -161.40458333333336,
+        62.80083333333334
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memsem",
+      "metric": "success",
+      "difference": 0.041666666666666664,
+      "ci": [
+        -0.16666666666666666,
+        0.25
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memsem",
+      "metric": "revisions",
+      "difference": 0.041666666666666574,
+      "ci": [
+        -1.3333333333333335,
+        1.3333333333333335
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memsem",
+      "metric": "model_calls",
+      "difference": 0.41666666666666674,
+      "ci": [
+        -4.833333333333334,
+        6.166666666666666
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memsem",
+      "metric": "shadow_usd",
+      "difference": 0.00028580499999999933,
+      "ci": [
+        -0.0022160221875000014,
+        0.0029359750000000004
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memepi",
+      "b": "memsem",
+      "metric": "seconds",
+      "difference": 1.2291666666666679,
+      "ci": [
+        -95.66020833333332,
+        95.70520833333335
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memproc",
+      "b": "memsem",
+      "metric": "success",
+      "difference": -0.125,
+      "ci": [
+        -0.375,
+        0.125
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memproc",
+      "b": "memsem",
+      "metric": "revisions",
+      "difference": 0.0,
+      "ci": [
+        -1.5,
+        1.4583333333333335
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memproc",
+      "b": "memsem",
+      "metric": "model_calls",
+      "difference": -0.7083333333333333,
+      "ci": [
+        -7.458333333333332,
+        5.458333333333333
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memproc",
+      "b": "memsem",
+      "metric": "shadow_usd",
+      "difference": 0.00046239624999999955,
+      "ci": [
+        -0.002580454468750001,
+        0.003583582906249999
+      ],
+      "pairs": 24,
+      "real": false
+    },
+    {
+      "a": "memproc",
+      "b": "memsem",
+      "metric": "seconds",
+      "difference": 31.804166666666667,
+      "ci": [
+        -76.44864583333333,
+        149.14291666666665
+      ],
+      "pairs": 24,
+      "real": false
+    }
+  ],
+  "errors": []
+}
