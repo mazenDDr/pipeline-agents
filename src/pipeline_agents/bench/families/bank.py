@@ -117,7 +117,8 @@ PREVIOUS = TaskSpec(
         "a previous-campaign contact is recorded;\n"
         '- `"mean_days_since_previous_contact"`: the mean of that number over those clients;\n'
         '- `"subscription_rate_by_previous_outcome"`: an object with keys `"failure"`, `"nonexistent"`, '
-        '`"success"` (the values of poutcome), each the fraction (0 to 1) of those clients with `y` = `yes`.'
+        '`"success"` (the values of poutcome), each the fraction (0 to 1) of all clients with that outcome '
+        "whose `y` is `yes`."
     ),
     traps=[
         Trap(

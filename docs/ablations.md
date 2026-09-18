@@ -89,3 +89,4 @@ Two more runs were hurt by a validation tool that was too strict during these ru
 - Memory arms start with the procedural skills mined from dev runs; facts and episodes start empty and are written by the run sequence itself.
 - The Critic agrees only weakly with careful labels (see `docs/trust.md`), so a revision is not proof that a step was wrong.
 - Shadow $ are token counts times a pinned price table, never money spent.
+- Two defects found afterwards, in `docs/failure_taxonomy.md`, are inside these numbers: the `bank-2` task text disagreed with its own hidden answer (6 runs, both systems), and the dataset profile invited the team arms to delete real duplicate rows on `retail-1` (14 of 15 team runs; no baseline run did it). Both are fixed now, after these runs.

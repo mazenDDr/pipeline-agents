@@ -241,7 +241,10 @@ def profile_file(path: Path, display_name: str | None = None) -> FileProfile:
             )
     duplicates = int(body.duplicated().sum())
     if duplicates:
-        notes.append(f"{duplicates:,} exact duplicate rows")
+        notes.append(
+            f"{duplicates:,} exact duplicate rows: repeated records can be real "
+            "(the same item scanned twice), so check what a row means before dropping them"
+        )
     if rows > SAMPLE_ROWS:
         body = body.iloc[:: -(-rows // SAMPLE_ROWS)]
         notes.append(f"column statistics are from {len(body):,} rows spread evenly over the file")
