@@ -4,7 +4,8 @@ An experiment in whether a team of specialized agents can build safer pandas and
 than one model working alone.
 
 The team plans, executes one step at a time, checks the files in a sandbox, revises failures, and can re-plan.
-Every model call, prompt version, token, latency, validation result, and stop reason is recorded. The answer
+Every model call is logged, while typed run state and validation results are checkpointed after every graph
+node. The answer
 from the experiment is useful precisely because it is not the expected one: **the single-agent baseline won
 the controlled test.**
 
@@ -29,19 +30,43 @@ See [the field test](docs/field_test.md).
 
 ## How it works
 
-<img src="docs/img/loop.svg" width="100%" alt="The pipeline agent loop: Planner to Executor to sandbox and validation tools, then Critic; rejected work goes to the Reviser and accepted work continues to final delivery.">
+<img src="docs/img/loop.svg" width="100%" alt="The exact LangGraph: init, plan, execute, validate, critic and advance; failures go through revise, accepted plans go through deliver, and benchmark runs then use a separate hidden checker.">
 
-- The **Planner** turns the goal and dataset profile into ordered steps.
-- The **Executor** writes and runs one step in an isolated workspace.
-- Deterministic **validation tools** inspect artifacts directly: leakage, missing values and sentinels, row
-  accounting, split overlap, baseline comparisons, clean reruns, and prediction smoke tests.
-- The **Critic** accepts, revises, or escalates from those results. The **Reviser** specifies a repair; repeated
-  failure returns to the Planner, then stops for a human rather than looping forever.
-- An **Observer** saves the rendered prompt, raw response, parsed result, tokens, latency, tier, and shadow cost.
-- Three separate memory stores hold procedural skills, semantic dataset facts, and episodic run summaries.
+The diagram follows [`graph/build.py`](src/pipeline_agents/graph/build.py), including its actual node names and
+conditional edges:
 
-The final delivery is rerun from a clean copy, scored on a hidden holdout, and checked for the planted failure
-modes. [Walk through one real 37-call run](docs/tour.md), including the rejected attempts and re-plan.
+| node | what the code does | next |
+|---|---|---|
+| `init` | profile `data/`; retrieve semantic facts by file-schema fingerprint and similar past episodes | `plan` |
+| `plan` | the Planner returns a typed `Plan` | `execute` |
+| `execute` | retrieve procedural skills for this step; the Executor writes one Python file and the sandbox runs it | `validate`, retry infrastructure failure, or `revise` a crash |
+| `validate` | deterministic checks inspect the artifacts, never the Executor's claims | `critic` |
+| `critic` | the Critic returns a typed `Verdict`: accept, revise, or escalate | `advance`, `revise`, or `human` on low confidence |
+| `advance` | mark the step accepted and move the cursor | next `execute`, or `deliver` after the last step |
+| `revise` | the Reviser returns fix instructions or escalates the plan | retry `execute`, re-enter `plan`, or `human` when re-plans are exhausted |
+| `deliver` | assemble accepted step files into `pipeline.py`; clean-rerun it and smoke-test `predict.py` | `succeeded`, or `revise` the last step |
+| `human` | stop as `needs_human` with the reason | end |
+
+The validation node checks readable tables, numeric columns stored as text, missing/sentinel values, row loss,
+required IDs, target leakage, split overlap, temporal order, metric sanity, and JSON outputs when applicable.
+The Linux sandbox is a systemd scope plus user/network/mount/PID namespaces and resource limits: input data is
+read-only, `output/` is writable, and the repository, other runs, network, and hidden answers are absent.
+
+Two cross-cutting pieces sit around the graph:
+
+- `RunState` is one Pydantic object checkpointed to SQLite after every node. It holds the plan history, every
+  attempt/verdict/revision, retrieved memory, spend ledger, status, and stop reason.
+- The `Observer` wraps every model call. It chooses the budget tier and appends the rendered messages, prompt
+  versions and hashes, raw content/reasoning, token counts, latency, model, tier, cache key, error, and shadow
+  cost to `calls.jsonl`.
+
+The hidden checker is deliberately **outside** the graph in [`bench/run.py`](src/pipeline_agents/bench/run.py).
+Only after the run stops can the benchmark runner expose its output to hidden labels and answers. The
+single-agent baseline bypasses LangGraph and per-step validation, but shares the same model harness, budget,
+sandbox, delivery checks, repair allowance, and hidden checker. That is the comparison being measured.
+
+[Walk through one real 37-call run](docs/tour.md), including its saved code, tool findings, rejected attempt,
+re-plan, and hidden-check result.
 
 ## What was measured
 
@@ -82,22 +107,33 @@ pip install -e ".[dev,app]"
 make check
 ```
 
-Start the configured local models, then run one benchmark task:
+The repository's measured setup uses the included `./gpu` helper and an SSH/Tailscale host named `gpu-box`.
+Start the two configured model servers in a remote tmux session:
 
 ```bash
-bash scripts/serve_models.sh tiered
-PYTHONPATH=src python scripts/run_task.py --task bike-2-weather --system multi
+GPU_SESSION=serve ./gpu run bash scripts/serve_models.sh tiered
 ```
 
-Use `--system baseline` for the one-model comparison. `scripts/run_grid.py` runs resumable experiment grids;
-`configs/grids/` contains the exact committed configurations. Dataset downloads and hidden holdouts are built
-locally and are intentionally not committed. See [the benchmark guide](docs/benchmark.md) for the build and
-validation commands.
+In another terminal, download the UCI sources once, build and validate the benchmark, then run one task:
+
+```bash
+./gpu exec scripts/fetch_datasets.py
+./gpu exec scripts/validate_benchmark.py
+./gpu exec scripts/run_task.py --task bike-2-weather --system multi
+```
+
+The full validation proves all 58 reference, honest, and deliberately broken solutions behave as expected;
+it can take a few minutes. Use `--system baseline` for the one-model comparison. `scripts/run_grid.py` runs
+resumable experiment grids, and `configs/grids/` contains the exact committed configurations. Raw datasets,
+built workspaces, hidden answers, model weights, and full run workspaces are intentionally not committed.
+
+To run on another Linux machine, change `server_binary` and `model_dir` in `configs/models.yaml`, serve the two
+OpenAI-compatible endpoints on ports 8081 and 8082, and set `PIPELINE_MODEL_HOST` when they are not localhost.
 
 To open the Streamlit interface after the model endpoints are healthy:
 
 ```bash
-make app
+PIPELINE_MODEL_HOST=<gpu-box-address> make app
 ```
 
 It accepts a CSV and goal, streams the plan and checks, and exposes finished-run and aggregate dashboards.
