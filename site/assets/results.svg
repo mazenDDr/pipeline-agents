@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" width="880" height="360" role="img" aria-labelledby="title"><title id="title">Held-out success rates with 95% intervals, from the committed T11 summaries</title><style>
+.bg{fill:#ECEEF1}.card{fill:#FFFFFF;stroke:#DCE0E6}.accent{stroke:#2D5BD6;stroke-width:1.6}
+.lab{font:600 9.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#6B7480;letter-spacing:.1em}
+.hd{font:600 14px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.body{font:400 12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#4A535F}
+.tiny{font:400 10px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#6B7480}
+.mono{font:400 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#171B21}
+.big{font:600 30px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.blue{fill:#2D5BD6}.ok{fill:#2E7D4F}.bad{fill:#C0392B}
+.rule{stroke:#DCE0E6;stroke-width:1}.ci{stroke:#4A535F;stroke-width:1.5}
+.bar{fill:#2D5BD6;transform-box:fill-box;transform-origin:left center;animation:grow 11s infinite}
+.bar.other{fill:#8A93A1}.reveal{animation:show 11s infinite}.late{animation:late 11s infinite}
+@keyframes grow{0%,8%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+@keyframes show{0%,10%{opacity:0}28%,100%{opacity:1}}
+@keyframes late{0%,32%{opacity:0}48%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;opacity:1!important}}
+</style><rect class="bg" width="880" height="360" rx="14"/><text x="28" y="28" class="lab">THE CONTROLLED TEST · EIGHT TASKS × THREE SEEDS</text><text x="28" y="78" class="body">Single agent</text><rect class="bar" x="235" y="64" width="420.0" height="22" rx="3"/><path class="ci" d="M555.0 70v10m0 -5H715.0m0 -5v10"/><text x="735" y="80" class="mono">0.88</text><text x="28" y="120" class="body">Team · all memories</text><rect class="bar other" x="235" y="106" width="339.99999999999994" height="22" rx="3"/><path class="ci" d="M455.0 112v10m0 -5H675.5000000000018m0 -5v10"/><text x="735" y="122" class="mono">0.71</text><text x="28" y="162" class="body">Episodic only</text><rect class="bar other" x="235" y="148" width="300.0" height="22" rx="3"/><path class="ci" d="M415.0 154v10m0 -5H655.0m0 -5v10"/><text x="735" y="164" class="mono">0.62</text><text x="28" y="204" class="body">Semantic only</text><rect class="bar other" x="235" y="190" width="279.99999999999994" height="22" rx="3"/><path class="ci" d="M375.0 196v10m0 -5H655.0m0 -5v10"/><text x="735" y="206" class="mono">0.58</text><text x="28" y="246" class="body">Team · no memory</text><rect class="bar other" x="235" y="232" width="240.0" height="22" rx="3"/><path class="ci" d="M335.0 238v10m0 -5H615.0m0 -5v10"/><text x="735" y="248" class="mono">0.50</text><text x="28" y="288" class="body">Procedural only</text><rect class="bar other" x="235" y="274" width="220.0" height="22" rx="3"/><path class="ci" d="M315.0 280v10m0 -5H595.0m0 -5v10"/><text x="735" y="290" class="mono">0.46</text><text x="28" y="340" class="tiny">Whiskers: 95% bootstrap intervals over tasks, then seeds. Comparisons are paired on task and seed.</text></svg>

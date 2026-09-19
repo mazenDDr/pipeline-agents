@@ -1,0 +1,26 @@
+<p class="record">RECORDED RUNS / THREE UNSEEN DATASETS / TWO SYSTEMS</p>
+
+Does the system work beyond the tasks used to build it? Give both systems the same fresh data and a concrete goal, compute references separately, and inspect the actual outputs. No model runs when you open this page.
+
+<figure><img src="../assets/field.svg" alt="Calls and wall time for both systems across three fresh datasets."><figcaption>{{ field|selectattr('success')|list|length }} of {{ field|length }} recorded runs passed. One run per system and task—not a confidence interval or a general success-rate claim.</figcaption></figure>
+
+## Pick a task
+
+<div class="map">
+<details open><summary>Wine quality · prediction</summary><p>Predict a sensory score from eleven laboratory measurements. The checker keeps 980 wines hidden and measures mean absolute error. Lower is better.</p><a href="#wine-quality">Read the goal and both results ↓</a></details>
+<details><summary>Student grades · analysis</summary><p>Read a semicolon-separated table. Report student count and final-grade means grouped by prior failures and study time. Compare the returned JSON with the reference.</p><a href="#student-grades">Read the goal and both answers ↓</a></details>
+<details><summary>Household power · time series</summary><p>Find December 2008 inside two million minute readings. Parse day-first dates and missing-value markers, then calculate daily means and the peak day.</p><a href="#household-power">Read the goal and both answers ↓</a></details>
+</div>
+
+## The comparison, without hiding the cost
+
+| Task | System | Passed | Model calls | Seconds | Shadow $ |
+|---|---|---|---:|---:|---:|
+{% for row in field %}| [{{ row.task }}](#{{ row.task }}) | {{ labels[row.system] }} | {{ 'yes' if row.success else 'no' }} | {{ row.model_calls }} | {{ '%.1f'|format(row.seconds) }} | {{ '%.5f'|format(row.shadow_usd) }} |
+{% endfor %}
+
+Both systems returned a correct result for each task. The team used more model calls every time. This is a transfer sanity check with separate reference calculations, not a rerun of the controlled benchmark or evidence that all future uploads will pass.
+
+**Sources:** [run summary]({{ repo }}/blob/main/outputs/field/summary.json), [reference answers]({{ repo }}/blob/main/outputs/field/reference.json), [report builder]({{ repo }}/blob/main/scripts/build_field_doc.py). The report below preserves the recorded goals, outputs and marked excerpts.
+
+---

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pipeline-agents · Field guide</title>
+<meta name="description" content="A measured experiment in agents that build data pipelines. Real runs, checks, failures and comparisons.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<nav><a class="brand" href="index.html">▤ pipeline-agents</a><div>
+<a href="index.html">Field guide</a><a href="tour/">Tour</a>
+<a href="field-test/">Field test</a><a href="https://github.com/mazenDDr/pipeline-agents">Source ↗</a>
+<button id="theme" aria-label="Toggle color theme">◐</button></div></nav>
+<main><header><p class="label">A MEASURED EXPERIMENT / FIELD GUIDE</p>
+<h1>Field guide</h1><p class="lede">Raw data. A goal. Every decision left on the record.</p></header>
+<article><p class="record">READ THE SYSTEM / FOLLOW THE EVIDENCE</p>
+
+<p>A CSV and a goal go in. A runnable pandas/sklearn pipeline comes out—or a recorded reason to stop. This guide connects the code to the experiment: what each part does, what it leaves behind, and what the measurements say about keeping it.</p>
+<figure><img src="assets/hero.svg" alt="Recorded wine-quality comparison: both systems pass, using 16 and 2 model calls."><figcaption>Start with the result, not the number of agents. <a href="field-test/">Inspect this field test →</a></figcaption></figure>
+
+<h2 id="a-map-of-the-system">A map of the system</h2>
+<p>Open a card to see its inputs, outputs and source. Follow the normal run left to right; repairs return to execution, while a re-plan returns to the Planner.</p>
+<div class="map">
+<details><summary>01 · Profile and state</summary><p>Reads the goal, data files and dictionary. Writes a dataset profile and typed <code>RunState</code>. <code>profile_dir</code> inspects the data; <code>init</code> retrieves memory.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/tools/profile.py">tools/profile.py ↗</a><br><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/schemas.py">schemas.py ↗</a></details>
+<details><summary>02 · Planner</summary><p>Reads the goal, profile and retrieved context. Writes an ordered <code>Plan</code>: each step has inputs, outputs and acceptance checks. A re-plan also sees the earlier plan and escalation reason.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a></details>
+<details><summary>03 · Executor</summary><p>Reads one step, prior artifacts and retrieved skills. Writes Python, runs it, and records stdout, stderr and artifacts in a <code>StepAttempt</code>.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a><br><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/sandbox/runner.py">sandbox/runner.py ↗</a></details>
+<details><summary>04 · Tools and Critic</summary><p>Reads actual files, not just the Executor’s claims. Validators produce findings; the Critic returns an accept, revise or escalate <code>Verdict</code> with confidence.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/tools/validators.py">tools/validators.py ↗</a><br><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a></details>
+<details><summary>05 · Reviser and routing</summary><p>Reads the step, verdict and revision history. Writes repair instructions or an escalation. <code>build_graph</code> routes the result, limits loops and checkpoints every node to SQLite.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a><br><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/graph/build.py">graph/build.py ↗</a></details>
+<details><summary>06 · Delivery and scoring</summary><p>Assembles accepted scripts, reruns them cleanly and smoke-tests predictions. Only after the graph stops does the benchmark checker use hidden labels. App uploads have no hidden reference answer.</p><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/graph/checks.py">graph/checks.py ↗</a><br><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/checker.py">bench/checker.py ↗</a></details>
+</div>
+
+<figure><img src="assets/pipeline.svg" alt="The agent loop, its saved artifacts, and the separate hidden checker."><figcaption>The diagram groups the work into five stages. The graph also names its recovery and bookkeeping nodes explicitly: revise, advance and human.</figcaption></figure>
+
+<h2 id="profile">01 / Read what is actually in the data</h2>
+
+<p>The profiler reads formats, columns, row counts and missing values before a model writes code. The data dictionary matters: a numeric column can be a category, a sentinel can look like a measurement, and two identical rows can still be two real purchases.</p>
+<p><strong>A real failure:</strong> repeated retail transactions were labelled as duplicates. Fourteen team runs removed valid purchases. The profiler’s wording was changed after the experiment; the original scores were not rewritten. A useful warning must describe what was observed without pretending that the correct cleaning action is already known.</p>
+<p><strong>Files:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/tools/profile.py">profile.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/docs/failure_taxonomy.md">the failure taxonomy</a>.</p>
+<h2 id="plan">02 / Turn the goal into inspectable steps</h2>
+
+<p>The Planner produces a typed plan, not a free-form conversation. Each step names its intent and acceptance checks. The state keeps both the plan version and the evidence from attempts, so a re-plan can be inspected afterwards.</p>
+<p>The <a href="tour/#the-plan">credit-default tour</a> begins with loading, cleaning, feature engineering, splitting, training, evaluation and reporting. It also shows the second plan. The first plan was not erased from the story just because the final pipeline passed.</p>
+<p><strong>Why separate a Planner?</strong> It makes the proposed work inspectable. That is an engineering property, not proof that it improves answers: the whole-pipeline baseline won the measured no-memory comparison.</p>
+<p><strong>Files:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">planner.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/schemas.py">schemas.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/tree/main/prompts">versioned prompts</a>.</p>
+<h2 id="execute">03 / Run the code and keep the evidence</h2>
+
+<p>The Executor writes a Python step and runs it in a per-run workspace. On Linux, process namespaces and resource limits restrict access, network use, memory and execution time. The model does not see the hidden benchmark answers. On macOS, the fallback runner is a timeout-controlled subprocess, <strong>not an isolation boundary</strong>.</p>
+<p>The Observer records each model request and response, prompt versions, tokens, latency and shadow cost. Parsed plans, findings and verdicts live in the checkpointed state. These are complementary records, not interchangeable logs.</p>
+<p><strong>Measured limitation:</strong> seven failed runs exceeded the sandbox’s memory limit. They were treated as infrastructure failures and retried, rather than asking the Reviser to choose a smaller representation. Isolation worked; the recovery policy was the wrong tool for that failure.</p>
+<p><strong>Files:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">executor.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/sandbox/runner.py">runner.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/observer.py">observer.py</a>.</p>
+<h2 id="check">04 / Check the artifacts, then check the checker</h2>
+
+<p>Validation tools inspect leakage, missing values, row accounting and other concrete properties. The Critic reads those findings and chooses a verdict. The Reviser can request another attempt; exhausted repairs can trigger a re-plan. Low confidence or exhausted limits can stop for a human.</p>
+<figure><img src="assets/trust.svg" alt="Reference-label audit of the Critic, including strict and lenient errors."><figcaption>The labels and interval come from <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/outputs/trust/t10/scores.json">the committed trust audit</a>.</figcaption></figure>
+
+<p><strong>Why keep an independent check?</strong> Critic agreement was κ 0.30. Its confidence was almost always maximal. The run’s confident verdict is evidence of what the model believed, not evidence that the artifact was correct. <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/docs/trust.md">Read the audit</a>.</p>
+<h2 id="deliver">05 / Deliver from a clean start</h2>
+
+<p>Delivery assembles accepted scripts into <code>output/pipeline.py</code>, reruns them from a clean copy and smoke-tests prediction. The graph has nine nodes: <code>init</code>, <code>plan</code>, <code>execute</code>, <code>validate</code>, <code>critic</code>, <code>revise</code>, <code>advance</code>, <code>deliver</code> and <code>human</code>. <code>advance</code> moves the cursor after an accepted step; <code>human</code> is an explicit stop path.</p>
+<p>The benchmark wrapper then applies the hidden checker. A successful graph status does <strong>not</strong> guarantee a passed benchmark. Predictive tasks also need coverage of the hidden rows, an adequate score and an honest validation estimate; analytical tasks need the right answer.</p>
+<p>The <a href="tour/#what-the-hidden-checker-found">tour’s final checks</a> show both layers separately. This boundary also explains why an uploaded CSV can receive delivery checks but not a claim of hidden-test accuracy.</p>
+<p><strong>Files:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/graph/build.py">graph/build.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/checker.py">bench/checker.py</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/docs/benchmark.md">benchmark contract</a>.</p>
+<h2 id="what-did-the-extra-structure-buy">What did the extra structure buy?</h2>
+<figure><img src="assets/results.svg" alt="Six configurations compared on held-out tasks, with bootstrap intervals."><figcaption>Eight held-out tasks, three seeds each. <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/docs/ablations.md">Method, paired comparisons and confounds →</a></figcaption></figure>
+
+<p>The single agent reached 0.88 success, the no-memory team 0.50. The baseline can rewrite the whole program; the team can diagnose a fault in an earlier file while only repairing the current step. More feedback did not automatically produce a better repair.</p>
+<figure><img src="assets/memory.svg" alt="Semantic, procedural and episodic memory retrieval routes."><figcaption>Three stores with different jobs. <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/memory/system.py">Inspect the retrieval and mining rules →</a></figcaption></figure>
+
+<p>All stores together reached 0.71. The paired improvement over no memory still includes zero. Development-only mining protects the evaluation split, but it does not guarantee that a retrieved strategy is useful for the next dataset.</p>
+<h2 id="take-it-out-of-the-benchmark">Take it out of the benchmark</h2>
+<p>The <a href="field-test/">field test</a> uses fresh wine, student and household-power data. The <a href="tour/">tour</a> follows a single credit-default run through plans, code, repairs and scoring. Both are recorded evidence, not live model demos.</p>
+<h2 id="rebuild-this-guide">Rebuild this guide</h2>
+<pre><code class="language-bash">pip install -e '.[docs]'
+python scripts/build_portfolio.py
+python -m http.server 8000 --directory site
+# Open http://localhost:8000
+</code></pre>
+<p>No model, dataset download or private checkpoint is needed. The builder reads committed summaries and the existing generated research documents. To run agents, follow the <a href="https://github.com/mazenDDr/pipeline-agents#run-it-yourself">Linux setup in the README</a>.</p>
+<h2 id="repository-map">Repository map</h2>
+<p>Line counts are generated from the source tree on each build. Expand to inspect the complete map.</p>
+<details><summary>Python source files and line counts</summary>
+<div class="table-wrap"><div class="table-wrap"><table><thead><tr><th>File</th><th>Lines</th></tr></thead><tbody>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/baseline.py">src/pipeline_agents/agents/baseline.py</a></td><td>152</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/common.py">src/pipeline_agents/agents/common.py</a></td><td>121</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/agents/roles.py">src/pipeline_agents/agents/roles.py</a></td><td>168</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/analysis/failures.py">src/pipeline_agents/analysis/failures.py</a></td><td>157</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/app/streamlit_app.py">src/pipeline_agents/app/streamlit_app.py</a></td><td>311</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/app/user_run.py">src/pipeline_agents/app/user_run.py</a></td><td>245</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/build.py">src/pipeline_agents/bench/build.py</a></td><td>71</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/checker.py">src/pipeline_agents/bench/checker.py</a></td><td>201</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/adult.py">src/pipeline_agents/bench/families/adult.py</a></td><td>182</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/air.py">src/pipeline_agents/bench/families/air.py</a></td><td>207</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/bank.py">src/pipeline_agents/bench/families/bank.py</a></td><td>186</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/bike.py">src/pipeline_agents/bench/families/bike.py</a></td><td>148</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/credit.py">src/pipeline_agents/bench/families/credit.py</a></td><td>154</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/diabetes.py">src/pipeline_agents/bench/families/diabetes.py</a></td><td>169</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/families/retail.py">src/pipeline_agents/bench/families/retail.py</a></td><td>197</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/field.py">src/pipeline_agents/bench/field.py</a></td><td>265</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/grid.py">src/pipeline_agents/bench/grid.py</a></td><td>179</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/run.py">src/pipeline_agents/bench/run.py</a></td><td>163</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/bench/spec.py">src/pipeline_agents/bench/spec.py</a></td><td>75</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/config.py">src/pipeline_agents/config.py</a></td><td>103</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/eval/critic_audit.py">src/pipeline_agents/eval/critic_audit.py</a></td><td>217</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/eval/report.py">src/pipeline_agents/eval/report.py</a></td><td>168</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/eval/stats.py">src/pipeline_agents/eval/stats.py</a></td><td>52</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/graph/build.py">src/pipeline_agents/graph/build.py</a></td><td>396</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/graph/checks.py">src/pipeline_agents/graph/checks.py</a></td><td>371</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/budget.py">src/pipeline_agents/harness/budget.py</a></td><td>55</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/client.py">src/pipeline_agents/harness/client.py</a></td><td>122</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/observer.py">src/pipeline_agents/harness/observer.py</a></td><td>124</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/registry.py">src/pipeline_agents/harness/registry.py</a></td><td>89</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/harness/render.py">src/pipeline_agents/harness/render.py</a></td><td>46</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/memory/store.py">src/pipeline_agents/memory/store.py</a></td><td>118</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/memory/system.py">src/pipeline_agents/memory/system.py</a></td><td>275</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/code_tasks.py">src/pipeline_agents/probe/code_tasks.py</a></td><td>778</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/plan_tasks.py">src/pipeline_agents/probe/plan_tasks.py</a></td><td>181</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/report.py">src/pipeline_agents/probe/report.py</a></td><td>143</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/rescore.py">src/pipeline_agents/probe/rescore.py</a></td><td>75</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/run.py">src/pipeline_agents/probe/run.py</a></td><td>449</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/probe/sandbox.py">src/pipeline_agents/probe/sandbox.py</a></td><td>40</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/sandbox/runner.py">src/pipeline_agents/sandbox/runner.py</a></td><td>271</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/schemas.py">src/pipeline_agents/schemas.py</a></td><td>171</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/tools/profile.py">src/pipeline_agents/tools/profile.py</a></td><td>262</td></tr>
+<tr><td><a href="https://github.com/mazenDDr/pipeline-agents/blob/main/src/pipeline_agents/tools/validators.py">src/pipeline_agents/tools/validators.py</a></td><td>317</td></tr>
+</tbody></table></div></div></details>
+
+<h2 id="glossary">Glossary</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent role</td>
+<td>A model call with its own inputs, prompt and typed output contract.</td>
+</tr>
+<tr>
+<td>Artifact</td>
+<td>A file produced by a step and available for later steps or checks.</td>
+</tr>
+<tr>
+<td>Checkpoint</td>
+<td>The typed run state saved after a graph node, supporting inspection and resume.</td>
+</tr>
+<tr>
+<td>Hidden checker</td>
+<td>Code outside the agent graph that compares output against held-back evidence.</td>
+</tr>
+<tr>
+<td>Shadow $</td>
+<td>Token counts multiplied by a pinned price table; not a bill.</td>
+</tr>
+<tr>
+<td>Paired interval</td>
+<td>Uncertainty on a difference using the same tasks and seeds for both systems.</td>
+</tr>
+<tr>
+<td>Re-plan</td>
+<td>Replace the current plan after escalation, retaining the earlier evidence.</td>
+</tr>
+</tbody>
+</table></div></article>
+<footer>Built from committed run summaries and research documents. Recorded results; no model runs in this page.
+<a href="https://github.com/mazenDDr/pipeline-agents/blob/main/scripts/build_portfolio.py">Rebuild and inspect the sources ↗</a></footer>
+</main><script src="assets/site.js"></script>
+</body></html>

@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pipeline-agents · One run, start to finish</title>
+<meta name="description" content="A measured experiment in agents that build data pipelines. Real runs, checks, failures and comparisons.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav><a class="brand" href="../index.html">▤ pipeline-agents</a><div>
+<a href="../index.html">Field guide</a><a href="../tour/">Tour</a>
+<a href="../field-test/">Field test</a><a href="https://github.com/mazenDDr/pipeline-agents">Source ↗</a>
+<button id="theme" aria-label="Toggle color theme">◐</button></div></nav>
+<main><header><p class="label">A MEASURED EXPERIMENT / ONE RUN, START TO FINISH</p>
+<h1>One run, start to finish</h1><p class="lede">Raw data. A goal. Every decision left on the record.</p></header>
+<article><p class="record">RECORDED TRACE / CREDIT DEFAULT / NO MEMORY</p>
+
+<p>Follow one task through the system, including the wrong turns. This is a saved run, not a polished example rewritten afterwards. Code excerpts are shortened in the source report; every cut is marked.</p>
+<div class="notice">The final pipeline passed. That does not mean every decision helped: the Critic rejected a placeholder <code>pipeline.py</code> that delivery would have replaced anyway. The resulting re-plan is part of this record.</div>
+
+<h2 id="choose-your-route">Choose your route</h2>
+<div class="map">
+<details open><summary>Understand the task</summary><p>Read exactly what the system was asked to deliver, then inspect its first seven-step plan.</p><a href="#the-task-the-agents-were-given">Task ↓</a> · <a href="#the-plan">First plan ↓</a></details>
+<details><summary>Follow the wrong turn</summary><p>The first plan’s final step stalled on a placeholder. The second plan repeats the work with a new set of instructions.</p><a href="#the-plan-after-the-re-plan-v2">Second plan ↓</a></details>
+<details><summary>Inspect the verdict</summary><p>Separate delivery checks from hidden scoring, then compare the model-call cost with what this single run can establish.</p><a href="#what-the-delivery-checks-found">Delivery ↓</a> · <a href="#what-the-hidden-checker-found">Hidden score ↓</a> · <a href="#what-it-cost">Cost ↓</a></details>
+</div>
+
+<p><strong>How to read the trace:</strong> Python is what the Executor wrote. “What it printed” is the actual process output. Validation findings come from tools; the verdict comes from the Critic. Revision instructions are shown where another attempt was requested. None of those layers alone is the final hidden check.</p>
+<p><strong>Provenance:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/docs/tour.md">the committed tour report</a> was exported by <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/scripts/build_tour_doc.py">build_tour_doc.py</a> from the run’s checkpoints and call log. This site renders that report without calling a model or requiring private run files.</p>
+<details class="tour-index">
+<summary>Jump to any step or check</summary>
+<div class="toc">
+<ul>
+<li><a href="#choose-your-route">Choose your route</a></li>
+<li><a href="#the-task-the-agents-were-given">The task the agents were given</a></li>
+<li><a href="#the-plan">The plan</a><ul>
+<li><a href="#s1-load-the-dataset-skipping-the-first-row-of-headers-to-correctly-parse-column-names-from-the-second-row">s1: Load the dataset, skipping the first row of headers to correctly parse column names from the second row.</a></li>
+<li><a href="#s2-handle-potential-outliers-or-missing-values-and-ensure-correct-data-types-specifically-verify-that-education-and-marriage-codes-are-handled-appropriately-and-check-for-nulls">s2: Handle potential outliers or missing values and ensure correct data types. Specifically, verify that EDUCATION and MARRIAGE codes are handled appropriately and check for nulls.</a></li>
+<li><a href="#s3-encode-categorical-variables-sex-education-marriage-pay_x-and-create-any-useful-derived-features-eg-payment-to-bill-ratios-while-ensuring-the-target-is-separated">s3: Encode categorical variables (SEX, EDUCATION, MARRIAGE, PAY_X) and create any useful derived features (e.g., payment-to-bill ratios) while ensuring the target is separated.</a></li>
+<li><a href="#s4-split-the-data-into-training-and-validation-sets-given-the-nature-of-credit-data-a-stratified-split-is-used-to-maintain-the-default-rate-in-both-sets">s4: Split the data into training and validation sets. Given the nature of credit data, a stratified split is used to maintain the default rate in both sets.</a></li>
+<li><a href="#s5-train-a-classification-model-eg-random-forest-or-gradient-boosting-to-predict-the-probability-of-default">s5: Train a classification model (e.g., Random Forest or Gradient Boosting) to predict the probability of default.</a></li>
+<li><a href="#s6-evaluate-the-model-on-the-held-out-validation-set-using-roc-auc">s6: Evaluate the model on the held-out validation set using ROC AUC.</a></li>
+<li><a href="#s7-generate-the-final-pipelinepy-and-predictpy-scripts-predictpy-must-load-the-saved-model-and-features-to-output-id-and-prediction-probability">s7: Generate the final pipeline.py and predict.py scripts. predict.py must load the saved model and features to output ID and prediction probability.</a></li>
+</ul>
+</li>
+<li><a href="#the-plan-after-the-re-plan-v2">The plan after the re-plan (v2)</a><ul>
+<li><a href="#s1-load-the-dataset-from-datacredit_card_clientscsv-skipping-the-first-header-row-to-use-the-second-row-as-column-names">s1: Load the dataset from data/credit_card_clients.csv, skipping the first header row to use the second row as column names.</a></li>
+<li><a href="#s2-clean-the-data-by-checking-for-nulls-and-ensuring-correct-types-map-the-pay_x-status-codes-to-a-consistent-format-if-necessary">s2: Clean the data by checking for nulls and ensuring correct types. Map the PAY_X status codes to a consistent format if necessary.</a></li>
+<li><a href="#s3-perform-feature-engineering-encode-categorical-variables-sex-education-marriage-and-pay_x-and-create-ratio-features-eg-pay_amtbill_amt-save-the-feature-names-and-preprocessing-parameters">s3: Perform feature engineering: encode categorical variables (SEX, EDUCATION, MARRIAGE, and PAY_X) and create ratio features (e.g., PAY_AMT/BILL_AMT). Save the feature names and preprocessing parameters.</a></li>
+<li><a href="#s4-split-the-data-into-training-and-validation-sets-using-a-stratified-split-to-preserve-the-class-distribution-of-the-target">s4: Split the data into training and validation sets using a stratified split to preserve the class distribution of the target.</a></li>
+<li><a href="#s5-train-a-machine-learning-model-eg-lightgbm-or-random-forest-on-the-training-set-and-save-the-model-and-the-preprocessing-pipelinefeature-list-to-the-output-directory">s5: Train a machine learning model (e.g., LightGBM or Random Forest) on the training set and save the model and the preprocessing pipeline/feature list to the output directory.</a></li>
+<li><a href="#s6-calculate-roc-auc-on-the-validation-set-and-save-the-result-to-outputmetricsjson">s6: Calculate ROC AUC on the validation set and save the result to output/metrics.json.</a></li>
+<li><a href="#s7-consolidate-all-logic-into-outputpipelinepy-which-performs-the-full-load-clean-feature-train-evaluate-flow-also-create-outputpredictpy-which-takes-and-as-arguments-to-output-the-requested-idprediction-format">s7: Consolidate all logic into output/pipeline.py, which performs the full load-clean-feature-train-evaluate flow. Also create output/predict.py which takes and as arguments to output the requested ID,prediction format.</a></li>
+</ul>
+</li>
+<li><a href="#what-the-delivery-checks-found">What the delivery checks found</a></li>
+<li><a href="#what-the-hidden-checker-found">What the hidden checker found</a></li>
+<li><a href="#what-it-cost">What it cost</a></li>
+<li><a href="#what-to-notice">What to notice</a></li>
+<li><a href="#what-this-run-shows-and-what-it-does-not">What this run shows, and what it does not</a></li>
+</ul>
+</div>
+</details>
+<hr />
+<p><code>multi_credit-1-default_s2</code>: the agent team on <code>credit-1-default</code>, seed 2, config <code>default</code>, no memory. Everything below is taken from the run's own checkpoints and call log by <code>scripts/build_tour_doc.py</code>; nothing is rewritten, and every cut is marked.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Result</td>
+<td>passed the hidden check</td>
+</tr>
+<tr>
+<td>Steps</td>
+<td>7 in the final plan, 1 re-plan</td>
+</tr>
+<tr>
+<td>Model calls</td>
+<td>37</td>
+</tr>
+<tr>
+<td>Shadow $</td>
+<td>0.0146</td>
+</tr>
+<tr>
+<td>Wall clock</td>
+<td>509 s</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="the-task-the-agents-were-given">The task the agents were given</h2>
+<pre><code># Task
+
+The bank wants to estimate each client's risk of defaulting on next month's payment. `data/credit_card_clients.csv` holds labelled clients (see `data/README.md`). Build a model that predicts the probability of `default payment next month`; it will be judged by ROC AUC on other clients.
+
+## Deliverables
+
+Write `output/pipeline.py`. It must run from this directory with `python output/pipeline.py`, read its
+inputs only from `data/`, and write everything it produces into `output/`. It will be re-run from a clean
+copy of `data/` and your `.py` files, so do not rely on files created by hand.
+
+The id column is `ID`; `prediction` is the probability of default.
+
+For this predictive task the pipeline must also:
+- write `output/metrics.json` containing your own validation estimate, `{&quot;validation_roc_auc&quot;: &lt;number&gt;}`,
+  measured on data the model was not trained on, in a way that reflects how the model will be used;
+- leave a `output/predict.py` that runs as `python output/predict.py &lt;features.csv&gt; &lt;predictions.csv&gt;` and
+  writes a CSV with a header and columns `ID,prediction` for every row of the features file. The
+  features file has the same format and columns as the training data, minus the target and anything that
+  would not be known at prediction time.
+</code></pre>
+<h2 id="the-plan">The plan</h2>
+<p><em>The main risks involve the categorical nature of several columns (SEX, EDUCATION, MARRIAGE, and PAY status) which should be treated as such rather than numeric. Since the data represents a time series of credit history (April to September), a random split might leak information; however, since the target is 'next month' and the features are historical, we must ensure the model only uses features available at the time of prediction.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>step</th>
+<th>kind</th>
+<th>intent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>s1</td>
+<td>load</td>
+<td>Load the dataset, skipping the first row of headers to correctly parse column names from the second row.</td>
+</tr>
+<tr>
+<td>s2</td>
+<td>clean</td>
+<td>Handle potential outliers or missing values and ensure correct data types. Specifically, verify that EDUCATION and MARRIAGE codes are handled appropriately and check for nulls.</td>
+</tr>
+<tr>
+<td>s3</td>
+<td>feature</td>
+<td>Encode categorical variables (SEX, EDUCATION, MARRIAGE, PAY_X) and create any useful derived features (e.g., payment-to-bill ratios) while ensuring the target is separated.</td>
+</tr>
+<tr>
+<td>s4</td>
+<td>split</td>
+<td>Split the data into training and validation sets. Given the nature of credit data, a stratified split is used to maintain the default rate in both sets.</td>
+</tr>
+<tr>
+<td>s5</td>
+<td>train</td>
+<td>Train a classification model (e.g., Random Forest or Gradient Boosting) to predict the probability of default.</td>
+</tr>
+<tr>
+<td>s6</td>
+<td>evaluate</td>
+<td>Evaluate the model on the held-out validation set using ROC AUC.</td>
+</tr>
+<tr>
+<td>s7</td>
+<td>report</td>
+<td>Generate the final pipeline.py and predict.py scripts. predict.py must load the saved model and features to output ID and prediction probability.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s1-load-the-dataset-skipping-the-first-row-of-headers-to-correctly-parse-column-names-from-the-second-row">s1: Load the dataset, skipping the first row of headers to correctly parse column names from the second row.</h3>
+<pre><code class="language-python">import pandas as pd
+
+def load_data():
+    # The data has two header rows. The first is generic codes (X1, X2...),
+    # the second contains the actual names (ID, LIMIT_BAL...).
+    # We skip the first row and use the second row as header.
+    file_path = 'data/credit_card_clients.csv'
+
+    # Read the file, skipping the first row
+    df = pd.read_csv(file_path, skiprows=1)
+
+    # Acceptance checks
+... (24 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Rows loaded: 24000 (Expected: 24000)
+Columns loaded: 25 (Expected: 25)
+Columns: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'default payment next month']
+Data successfully saved to output/loaded_data.csv
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: loaded_data.csv: no numeric columns stored as text</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s2-handle-potential-outliers-or-missing-values-and-ensure-correct-data-types-specifically-verify-that-education-and-marriage-codes-are-handled-appropriately-and-check-for-nulls">s2: Handle potential outliers or missing values and ensure correct data types. Specifically, verify that EDUCATION and MARRIAGE codes are handled appropriately and check for nulls.</h3>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+
+def clean_data():
+    # Load the data from the previous step
+    try:
+        df = pd.read_csv('output/loaded_data.csv')
+    except FileNotFoundError:
+        print(&quot;Error: output/loaded_data.csv not found.&quot;)
+        return
+
+    print(f&quot;Initial row count: {len(df)}&quot;)
+... (60 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Initial row count: 24000
+Initial columns: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'default payment next month']
+
+Missing values per column:
+No missing values found.
+
+Education unique values: [np.int64(0), np.int64(1), np.int64(2), np.int64(3), np.int64(4), np.int64(5), np.int64(6)]
+Marriage unique values: [np.int64(0), np.int64(1), np.int64(2), np.int64(3)]
+
+Final Data Types:
+ID                            int64
+LIMIT_BAL                     int64
+... (31 more lines)
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: cleaned_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: cleaned_data.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: cleaned_data.csv vs loaded_data.csv from s1: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: cleaned_data.csv: present: ['ID']</li>
+<li><code>[pass] target_leakage</code>: cleaned_data.csv: no feature gives default payment next month away (checked 23 columns)</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s3-encode-categorical-variables-sex-education-marriage-pay_x-and-create-any-useful-derived-features-eg-payment-to-bill-ratios-while-ensuring-the-target-is-separated">s3: Encode categorical variables (SEX, EDUCATION, MARRIAGE, PAY_X) and create any useful derived features (e.g., payment-to-bill ratios) while ensuring the target is separated.</h3>
+<p><strong>Attempt 1</strong></p>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+
+def main():
+    # Load the cleaned data from the previous step
+    df = pd.read_csv('output/cleaned_data.csv')
+    print(f&quot;Initial shape: {df.shape}&quot;)
+
+    # Separate ID and Target
+    target_col = 'default payment next month'
+    id_col = 'ID'
+
+    if target_col not in df.columns:
+        raise ValueError(f&quot;Target column {target_col} not found in data.&quot;)
+
+    y = df[target_col].copy()
+    ids = df[id_col].copy()
+    X = df.drop(columns=[target_col, id_col])
+
+    # 1. Handle Categorical Variables
+    # SEX, EDUCATION, MARRIAGE are already numeric codes.
+    # For a tree-based model, ordinal encoding (keeping them as is) is often fine,
+    # but we should ensure they are treated as categories if we were using linear models.
+    # Here we will keep them as numeric codes but ensure they are integers.
+    cat_cols = ['SEX', 'EDUCATION', 'MARRIAGE']
+    for col in cat_cols:
+... (51 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Initial shape: (24000, 25)
+All features are numeric.
+Features shape: (24000, 28)
+Columns in features: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'PAY_TO_BILL_RATIO', 'TOTAL_BILL_AMT', 'TOTAL_PAY_AMT', 'AVG_BILL_AMT']
+New features added: ['PAY_TO_BILL_RATIO', 'TOTAL_BILL_AMT', 'TOTAL_PAY_AMT', 'AVG_BILL_AMT']
+Target variable range: 0 to 1
+Feature engineering complete. Files saved to output/
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: features.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: features.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: features.csv vs cleaned_data.csv from s2: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: features.csv: present: ['ID']</li>
+<li><code>[pass] numbers_stored_as_text</code>: target.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: target.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: target.csv vs cleaned_data.csv from s2: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[FAIL] required_columns</code>: target.csv: missing ['ID']</li>
+<li><code>[pass] target_leakage</code>: target.csv: no feature gives default payment next month away (checked 0 columns)</li>
+</ul>
+<p>The Critic: <strong>revise</strong> (confidence 1) - The target file 'target.csv' is missing the 'ID' column. While the features file contains the ID, the target file must also contain the ID to allow for correct alignment during the training/validation split in subsequent steps, especially if any row filtering or shuffling occurs.</p>
+<p>The Reviser (fix): The 'target.csv' file must include the 'ID' column to ensure correct alignment with 'features.csv' during subsequent training and validation steps. Modify the script to concatenate the 'ID' column with the target variable 'y' before saving it to 'output/target.csv'.</p>
+<p><strong>Attempt 2</strong></p>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+
+def main():
+    # Load the cleaned data from the previous step
+    df = pd.read_csv('output/cleaned_data.csv')
+    print(f&quot;Initial shape: {df.shape}&quot;)
+
+    # Separate ID and Target
+    target_col = 'default payment next month'
+    id_col = 'ID'
+
+    if target_col not in df.columns:
+        raise ValueError(f&quot;Target column {target_col} not found in data.&quot;)
+
+    # Create y and include ID for alignment in subsequent steps
+    y_with_id = df[[id_col, target_col]].copy()
+    ids = df[id_col].copy()
+    X = df.drop(columns=[target_col, id_col])
+
+    # 1. Handle Categorical Variables
+    # SEX, EDUCATION, MARRIAGE are already numeric codes.
+    # For tree-based models, keeping them as integers is efficient.
+    cat_cols = ['SEX', 'EDUCATION', 'MARRIAGE']
+    for col in cat_cols:
+        X[col] = X[col].astype(int)
+... (44 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Initial shape: (24000, 25)
+All features are numeric.
+Features shape: (24000, 28)
+Target shape (with ID): (24000, 2)
+Columns in features: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'PAY_TO_BILL_RATIO', 'TOTAL_BILL_AMT', 'TOTAL_PAY_AMT', 'AVG_BILL_AMT']
+New features added: ['PAY_TO_BILL_RATIO', 'TOTAL_BILL_AMT', 'TOTAL_PAY_AMT', 'AVG_BILL_AMT']
+Target variable range: 0 to 1
+Feature engineering complete. Files saved to output/
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: features.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: features.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: features.csv vs cleaned_data.csv from s2: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: features.csv: present: ['ID']</li>
+<li><code>[pass] numbers_stored_as_text</code>: target.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: target.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: target.csv vs cleaned_data.csv from s2: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: target.csv: present: ['ID']</li>
+<li><code>[pass] target_leakage</code>: target.csv: no feature gives default payment next month away (checked 0 columns)</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s4-split-the-data-into-training-and-validation-sets-given-the-nature-of-credit-data-a-stratified-split-is-used-to-maintain-the-default-rate-in-both-sets">s4: Split the data into training and validation sets. Given the nature of credit data, a stratified split is used to maintain the default rate in both sets.</h3>
+<pre><code class="language-python">import pandas as pd
+from sklearn.model_selection import train_test_split
+
+def main():
+    # Load features and target
+    features = pd.read_csv('output/features.csv')
+    target_df = pd.read_csv('output/target.csv')
+
+    # Ensure alignment by ID
+    features = features.sort_values('ID').reset_index(drop=True)
+    target_df = target_df.sort_values('ID').reset_index(drop=True)
+
+... (49 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Total samples: 24000
+Target distribution (original):
+default payment next month
+0    0.778792
+1    0.221208
+Name: proportion, dtype: float64
+
+--- Split Results ---
+Training set size: 19200
+Validation set size: 4800
+Training target distribution:
+default payment next month
+... (14 more lines)
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: train_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] target_leakage</code>: train_data.csv: no feature gives default payment next month away (checked 27 columns)</li>
+<li><code>[pass] numbers_stored_as_text</code>: val_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] target_leakage</code>: val_data.csv: no feature gives default payment next month away (checked 27 columns)</li>
+<li><code>[pass] numbers_stored_as_text</code>: feature_columns.csv: no numeric columns stored as text</li>
+<li><code>[pass] split_overlap</code>: train_data.csv and val_data.csv: no rows, ids or groups shared between the splits</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s5-train-a-classification-model-eg-random-forest-or-gradient-boosting-to-predict-the-probability-of-default">s5: Train a classification model (e.g., Random Forest or Gradient Boosting) to predict the probability of default.</h3>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import pickle
+from sklearn.ensemble import GradientBoostingClassifier
+
+def train_model():
+    # Load training data
+    # train_data.csv contains features and the target 'default payment next month'
+    # based on the previous step's output description
+    train_df = pd.read_csv('output/train_data.csv')
+
+    # Identify target and features
+... (40 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Training set shape: (19200, 27)
+Target distribution:
+default payment next month
+0    0.778802
+1    0.221198
+Name: proportion, dtype: float64
+Features used: ['LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'PAY_TO_BILL_RATIO', 'TOTAL_BILL_AMT', 'TOTAL_PAY_AMT', 'AVG_BILL_AMT']
+Starting model training...
+Model training complete.
+Model saved to output/model.pkl
+Feature columns saved to output/feature_columns.csv
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: feature_columns.csv: no numeric columns stored as text</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s6-evaluate-the-model-on-the-held-out-validation-set-using-roc-auc">s6: Evaluate the model on the held-out validation set using ROC AUC.</h3>
+<pre><code class="language-python">import pandas as pd
+import json
+import pickle
+from sklearn.metrics import roc_auc_score
+
+def main():
+    # Load validation data and target
+    # step_04_split.py saved val_data.csv which contains both features and target
+    val_data = pd.read_csv('output/val_data.csv')
+
+    # The target column name from previous steps is 'default payment next month'
+    target_col = 'default payment next month'
+... (39 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Validation samples: 4800
+Target distribution in validation:
+default payment next month
+0    0.77875
+1    0.22125
+Name: proportion, dtype: float64
+Features used: 27
+Calculated ROC AUC: 0.7747
+Metrics successfully saved to output/metrics.json
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] metric_sanity</code>: AUC 0.775 vs dummy 0.500</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s7-generate-the-final-pipelinepy-and-predictpy-scripts-predictpy-must-load-the-saved-model-and-features-to-output-id-and-prediction-probability">s7: Generate the final pipeline.py and predict.py scripts. predict.py must load the saved model and features to output ID and prediction probability.</h3>
+<pre><code class="language-python">import os
+
+def create_pipeline():
+    pipeline_content = &quot;&quot;&quot;import sys
+import pandas as pd
+import joblib
+import os
+
+def main():
+    # This pipeline script is a wrapper that demonstrates the full process.
+    # In a real scenario, it might be used to re-run the whole sequence.
+    # For the purpose of this task, we ensure the deliverables are present.
+... (73 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Created output/pipeline.py
+Created output/predict.py
+Step 07: Report generation complete.
+</code></pre>
+<p>The Critic: <strong>revise</strong> (confidence 1) - The pipeline.py script is a dummy placeholder that does not actually execute the training/processing logic required by the task. The task requires 'output/pipeline.py' to be the script that runs the full process (reading data, training, saving model, etc.), but the executor wrote a script that just prints a message.</p>
+<p>The Reviser (escalate): The Planner needs to design a new plan where the final step (s7) does not simply write dummy scripts, but rather the pipeline.py script (generated in a previous step or as part of the final step) must contain the actual logic to perform the entire end-to-end process: loading data from <code>data/</code>, training the model, calculating validation metrics, and saving the model/features to <code>output/</code>.</p>
+<h2 id="the-plan-after-the-re-plan-v2">The plan after the re-plan (v2)</h2>
+<p><em>The primary risk is treating categorical codes (EDUCATION, MARRIAGE, PAY_X) as continuous numeric values, which would mislead the model. The plan handles this by encoding them correctly and ensures that the model only uses features available at prediction time (excluding ID and the target). The pipeline is designed such that the final step produces a functional 'pipeline.py' that contains the full training logic and a 'predict.py' for inference.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>step</th>
+<th>kind</th>
+<th>intent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>s1</td>
+<td>load</td>
+<td>Load the dataset from data/credit_card_clients.csv, skipping the first header row to use the second row as column names.</td>
+</tr>
+<tr>
+<td>s2</td>
+<td>clean</td>
+<td>Clean the data by checking for nulls and ensuring correct types. Map the PAY_X status codes to a consistent format if necessary.</td>
+</tr>
+<tr>
+<td>s3</td>
+<td>feature</td>
+<td>Perform feature engineering: encode categorical variables (SEX, EDUCATION, MARRIAGE, and PAY_X) and create ratio features (e.g., PAY_AMT/BILL_AMT). Save the feature names and preprocessing parameters.</td>
+</tr>
+<tr>
+<td>s4</td>
+<td>split</td>
+<td>Split the data into training and validation sets using a stratified split to preserve the class distribution of the target.</td>
+</tr>
+<tr>
+<td>s5</td>
+<td>train</td>
+<td>Train a machine learning model (e.g., LightGBM or Random Forest) on the training set and save the model and the preprocessing pipeline/feature list to the output directory.</td>
+</tr>
+<tr>
+<td>s6</td>
+<td>evaluate</td>
+<td>Calculate ROC AUC on the validation set and save the result to output/metrics.json.</td>
+</tr>
+<tr>
+<td>s7</td>
+<td>report</td>
+<td>Consolidate all logic into output/pipeline.py, which performs the full load-clean-feature-train-evaluate flow. Also create output/predict.py which takes <features.csv> and <predictions.csv> as arguments to output the requested ID,prediction format.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="s1-load-the-dataset-from-datacredit_card_clientscsv-skipping-the-first-header-row-to-use-the-second-row-as-column-names">s1: Load the dataset from data/credit_card_clients.csv, skipping the first header row to use the second row as column names.</h3>
+<pre><code class="language-python">import pandas as pd
+
+def load_data():
+    file_path = 'data/credit_card_clients.csv'
+
+    # The data has two header rows. The first is generic (X1, X2...), the second is the actual names.
+    # We skip the first row (index 0) to use the second row (index 1) as header.
+    df = pd.read_csv(file_path, skiprows=1)
+
+    # Acceptance checks
+    expected_rows = 24000
+    expected_cols = 25
+... (26 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Rows loaded: 24000 (Expected: 24000)
+Columns loaded: 25 (Expected: 25)
+Columns: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'default payment next month']
+Target column 'default payment next month' found.
+Data saved to output/loaded_data.csv
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: loaded_data.csv: no numeric columns stored as text</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s2-clean-the-data-by-checking-for-nulls-and-ensuring-correct-types-map-the-pay_x-status-codes-to-a-consistent-format-if-necessary">s2: Clean the data by checking for nulls and ensuring correct types. Map the PAY_X status codes to a consistent format if necessary.</h3>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+
+def clean_data():
+    # Load the data from the previous step
+    input_file = 'output/loaded_data.csv'
+    output_file = 'output/cleaned_data.csv'
+
+    try:
+        df = pd.read_csv(input_file)
+    except FileNotFoundError:
+        print(f&quot;Error: {input_file} not found.&quot;)
+... (54 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Initial row count: 24000
+Initial columns: ['ID', 'LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE', 'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6', 'BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6', 'default payment next month']
+No missing values found.
+Unique values in target column: [1 0]
+Final row count: 24000
+Target distribution:
+default payment next month
+0    18691
+1     5309
+Name: count, dtype: int64
+Data types:
+ID                            int64
+... (26 more lines)
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: cleaned_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: cleaned_data.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: cleaned_data.csv vs loaded_data.csv from s1: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: cleaned_data.csv: present: ['ID']</li>
+<li><code>[pass] target_leakage</code>: cleaned_data.csv: no feature gives default payment next month away (checked 23 columns)</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s3-perform-feature-engineering-encode-categorical-variables-sex-education-marriage-and-pay_x-and-create-ratio-features-eg-pay_amtbill_amt-save-the-feature-names-and-preprocessing-parameters">s3: Perform feature engineering: encode categorical variables (SEX, EDUCATION, MARRIAGE, and PAY_X) and create ratio features (e.g., PAY_AMT/BILL_AMT). Save the feature names and preprocessing parameters.</h3>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import json
+import os
+
+def perform_feature_engineering():
+    # Load the cleaned data from the previous step
+    input_path = 'output/cleaned_data.csv'
+    df = pd.read_csv(input_path)
+
+    print(f&quot;Original shape: {df.shape}&quot;)
+
+... (63 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Original shape: (24000, 25)
+Total columns after engineering: 31
+New feature columns created: ['PAY_TO_BILL_RATIO_AMT1', 'PAY_TO_BILL_RATIO_AMT2', 'PAY_TO_BILL_RATIO_AMT3', 'PAY_TO_BILL_RATIO_AMT4', 'PAY_TO_BILL_RATIO_AMT5', 'PAY_TO_BILL_RATIO_AMT6']
+All features are numeric.
+Feature count (excluding ID and target): 29
+Engineered data saved to output/engineered_data.csv
+Feature column list saved to output/feature_columns.json
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: engineered_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] missing_and_sentinels</code>: engineered_data.csv: no missing values, placeholders or sentinel codes</li>
+<li><code>[pass] row_accounting</code>: engineered_data.csv vs cleaned_data.csv from s2: 24,000 rows in, 24,000 out (0.0% dropped; allowed 5%). Expected if the step filters rows on purpose; a problem if it should keep them.</li>
+<li><code>[pass] required_columns</code>: engineered_data.csv: present: ['ID']</li>
+<li><code>[pass] target_leakage</code>: engineered_data.csv: no feature gives default payment next month away (checked 29 columns)</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s4-split-the-data-into-training-and-validation-sets-using-a-stratified-split-to-preserve-the-class-distribution-of-the-target">s4: Split the data into training and validation sets using a stratified split to preserve the class distribution of the target.</h3>
+<pre><code class="language-python">import pandas as pd
+from sklearn.model_selection import train_test_split
+
+def main():
+    # Load engineered data
+    input_file = 'output/engineered_data.csv'
+    df = pd.read_csv(input_file)
+
+    target_col = 'default payment next month'
+    id_col = 'ID'
+
+    # Identify features and target
+... (49 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Original dataset shape: (24000, 31)
+Target distribution before split:
+default payment next month
+0    0.778792
+1    0.221208
+Name: proportion, dtype: float64
+
+Split completed:
+Training set rows: 19200
+Validation set rows: 4800
+Target distribution in Training:
+default payment next month
+... (11 more lines)
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] numbers_stored_as_text</code>: train_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] target_leakage</code>: train_data.csv: no feature gives default payment next month away (checked 29 columns)</li>
+<li><code>[pass] numbers_stored_as_text</code>: val_data.csv: no numeric columns stored as text</li>
+<li><code>[pass] target_leakage</code>: val_data.csv: no feature gives default payment next month away (checked 29 columns)</li>
+<li><code>[pass] split_overlap</code>: train_data.csv and val_data.csv: no rows, ids or groups shared between the splits</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s5-train-a-machine-learning-model-eg-lightgbm-or-random-forest-on-the-training-set-and-save-the-model-and-the-preprocessing-pipelinefeature-list-to-the-output-directory">s5: Train a machine learning model (e.g., LightGBM or Random Forest) on the training set and save the model and the preprocessing pipeline/feature list to the output directory.</h3>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+import joblib
+import json
+import os
+from sklearn.ensemble import RandomForestClassifier
+
+def train_model():
+    # Load data from previous steps
+    train_df = pd.read_csv('output/train_data.csv')
+    feature_cols_path = 'output/feature_columns.json'
+
+... (49 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Loaded training data with shape: (19200, 31)
+Using 29 features for training.
+Target distribution in training set:
+default payment next month
+0    0.778802
+1    0.221198
+Name: proportion, dtype: float64
+Training RandomForest model...
+Training complete.
+Model saved to output/model.joblib
+
+--- Acceptance Check ---
+... (7 more lines)
+</code></pre>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s6-calculate-roc-auc-on-the-validation-set-and-save-the-result-to-outputmetricsjson">s6: Calculate ROC AUC on the validation set and save the result to output/metrics.json.</h3>
+<pre><code class="language-python">import pandas as pd
+import json
+import joblib
+from sklearn.metrics import roc_auc_score
+
+def main():
+    # Load validation data
+    val_data_path = 'output/val_data.csv'
+    val_df = pd.read_csv(val_data_path)
+
+    # Load model
+    model_path = 'output/model.joblib'
+... (40 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Validation rows: 4800
+Features used: 29
+Target distribution in validation:
+default payment next month
+0    0.77875
+1    0.22125
+Name: proportion, dtype: float64
+Calculated ROC AUC: 0.7734
+Metrics saved to output/metrics.json
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] metric_sanity</code>: AUC 0.773 vs dummy 0.500</li>
+</ul>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h3 id="s7-consolidate-all-logic-into-outputpipelinepy-which-performs-the-full-load-clean-feature-train-evaluate-flow-also-create-outputpredictpy-which-takes-and-as-arguments-to-output-the-requested-idprediction-format">s7: Consolidate all logic into output/pipeline.py, which performs the full load-clean-feature-train-evaluate flow. Also create output/predict.py which takes <features.csv> and <predictions.csv> as arguments to output the requested ID,prediction format.</h3>
+<p><strong>Attempt 1</strong></p>
+<pre><code class="language-python">import os
+
+def create_pipeline():
+    pipeline_content = &quot;&quot;&quot;import pandas as pd
+import numpy as np
+import json
+import joblib
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+
+def load_and_clean(filepath):
+    # Load skipping the first header row
+    df = pd.read_csv(filepath, skiprows=1)
+    # Ensure types and handle potential nulls
+    df = df.dropna()
+    return df
+
+def engineer_features(df):
+    # Create ratio features: PAY_AMT / BILL_AMT
+    # We use a small epsilon to avoid division by zero
+    for i in range(1, 7):
+        pay_col = f'PAY_AMT{i}'
+        bill_col = f'BILL_AMT{i}'
+        ratio_col = f'PAY_TO_BILL_RATIO_AMT{i}'
+        # Using absolute values for ratio to handle negative bills/payments meaningfully
+... (109 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Successfully created output/pipeline.py and output/predict.py
+</code></pre>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<p>The Reviser (fix): The <code>predict.py</code> script fails because it expects a standard CSV header, but the input features file follows the raw data format: it has two header rows and the ID column is unnamed (represented by an empty string or index 0 in the header). </p>
+<ol>
+<li>In <code>output/pipeline.py</code>, ensure the <code>engineer_features</code> logic is also applied within <code>predict.py</code>, as the model was trained on engineered features.</li>
+<li>In <code>output/predict.py</code>, update the data loading logic to handle the two-row header format (use <code>pd.read_csv(features_path, skiprows=1)</code> or similar to align with how the training data was loaded).</li>
+<li>In `o</li>
+</ol>
+<p><strong>Attempt 2</strong></p>
+<pre><code class="language-python">import os
+import json
+
+def create_deliverables():
+    # The pipeline script must contain all logic to go from raw data to model/metrics
+    pipeline_content = &quot;&quot;&quot;import pandas as pd
+import numpy as np
+import json
+import joblib
+import os
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+
+def load_and_clean(filepath):
+    # Load skipping the first generic header row (X1, X2...)
+    df = pd.read_csv(filepath, skiprows=1)
+    # Ensure types and handle potential nulls
+    df = df.dropna()
+    return df
+
+def engineer_features(df):
+    # Create ratio features: PAY_AMT / BILL_AMT
+    # We use a small epsilon to avoid division by zero
+    # We use absolute values to handle negative bills/payments meaningfully
+    for i in range(1, 7):
+... (136 more lines)
+</code></pre>
+<p>What it printed:</p>
+<pre><code>Successfully created output/pipeline.py and output/predict.py
+</code></pre>
+<p>What the validation tools said:</p>
+<ul>
+<li><code>[pass] clean_rerun</code>: pipeline.py ran from a clean copy</li>
+<li><code>[pass] deliverables</code>: predict.py and metrics.json written</li>
+<li><code>[FAIL] predict_smoke</code>: predict.py failed on 200 rows of smoke_features.csv (traceback): stderr: most recent call last):
+  File "/home/mazen/work/output/predict.py", line 44, in <module>
+    predict(sys.argv[1], sys.argv[2])
+  File "/home/mazen</li>
+</ul>
+<p>The Critic: <strong>revise</strong> (confidence 1) - delivery check predict_smoke failed: predict.py failed on 200 rows of smoke_features.csv (traceback): stderr: most recent call last):
+  File "/home/mazen/work/output/predict.py", line 44, in <module>
+    predict(sys.argv[1], sys.argv[2])
+  File "/home/mazen/work/output/predict.py", line 22, in predict
+    ids = df['ID']
+          ~~^^^^^^
+  File "/home/mazen/miniconda3/envs/main/lib/python3.11/site-packages/pandas/core/frame.py", line 4113, in <strong>getitem</strong>
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mazen/miniconda3/envs/main/lib/python3.11/site-packages/pandas/core/indexes/base.py", line 3819, in get_loc
+    raise KeyError(key) from err
+KeyError: 'ID'
+. The features file is in the raw data format: 2 header rows, separator ',', no target column; first line: ',X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20,X21,X22,X23,Y'</p>
+<p>After the deliverables were assembled:</p>
+<p>The Critic: <strong>accept</strong> (confidence 1) - no issues</p>
+<h2 id="what-the-delivery-checks-found">What the delivery checks found</h2>
+<ul>
+<li><code>[pass] clean_rerun</code>: pipeline.py ran from a clean copy</li>
+<li><code>[pass] deliverables</code>: predict.py and metrics.json written</li>
+<li><code>[pass] predict_smoke</code>: 200 varied predictions, one per id</li>
+</ul>
+<h2 id="what-the-hidden-checker-found">What the hidden checker found</h2>
+<p>The agents never see this: it runs the delivered pipeline from a clean copy of the data, then scores it on rows they never had.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>stage</th>
+<th>passed</th>
+<th>detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>delivered</td>
+<td>yes</td>
+<td>output/pipeline.py</td>
+</tr>
+<tr>
+<td>clean_rerun</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td>predict</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr>
+<td>coverage</td>
+<td>yes</td>
+<td>0 of 6000 holdout rows without a prediction</td>
+</tr>
+<tr>
+<td>score</td>
+<td>yes</td>
+<td>holdout roc_auc 0.7842, threshold 0.755</td>
+</tr>
+<tr>
+<td>honest_estimate</td>
+<td>yes</td>
+<td>validation 0.7734 vs holdout 0.7842 (gap 0.0108, tolerance 0.03)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="what-it-cost">What it cost</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>role</th>
+<th>calls</th>
+<th>input tokens</th>
+<th>output tokens</th>
+<th>shadow $</th>
+<th>seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>critic</td>
+<td>16</td>
+<td>36,672</td>
+<td>474</td>
+<td>0.00344</td>
+<td>60</td>
+</tr>
+<tr>
+<td>executor</td>
+<td>16</td>
+<td>60,444</td>
+<td>13,166</td>
+<td>0.00939</td>
+<td>347</td>
+</tr>
+<tr>
+<td>planner</td>
+<td>2</td>
+<td>5,826</td>
+<td>1,884</td>
+<td>0.00109</td>
+<td>49</td>
+</tr>
+<tr>
+<td>reviser</td>
+<td>3</td>
+<td>5,978</td>
+<td>530</td>
+<td>0.00070</td>
+<td>20</td>
+</tr>
+</tbody>
+</table></div>
+<p>Shadow $ are token counts times a pinned price table (<code>configs/prices.yaml</code>), never money spent: the models run locally.</p>
+<h2 id="what-to-notice">What to notice</h2>
+<ul>
+<li><strong>The re-plan came from a false alarm.</strong> The Critic rejected the last step because <code>output/pipeline.py</code> was a placeholder that printed a message. It is right that the file was a placeholder, but the orchestrator assembles <code>output/pipeline.py</code> from the accepted steps itself, so the file the Critic read was going to be replaced. The new plan was better anyway: it asked the last step for the whole flow.</li>
+<li><strong>The checks that fired.</strong> 20 tool findings across the run, 1 of them failures: predict_smoke. Each one is shown above, next to the step it judged.</li>
+<li><strong>The single-agent baseline did the same task</strong> with 2 model calls against 37, 0.0016 shadow $ against 0.0146, and 99 s against 509 s. It scored 0.7827 on the holdout against 0.7842. That is the finding of <code>docs/ablations.md</code> in one pair of runs.</li>
+</ul>
+<h2 id="what-this-run-shows-and-what-it-does-not">What this run shows, and what it does not</h2>
+<p>One run is an illustration, not evidence. The measured comparisons are in <code>docs/ablations.md</code>, how far the Critic can be trusted is in <code>docs/trust.md</code>, and every failed run of every grid is classed in <code>docs/failure_taxonomy.md</code>.</p></article>
+<footer>Built from committed run summaries and research documents. Recorded results; no model runs in this page.
+<a href="https://github.com/mazenDDr/pipeline-agents/blob/main/scripts/build_portfolio.py">Rebuild and inspect the sources ↗</a></footer>
+</main><script src="../assets/site.js"></script>
+</body></html>
