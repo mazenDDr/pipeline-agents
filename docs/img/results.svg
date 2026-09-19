@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 374" width="720" height="374" role="img" aria-label="Success rate per arm on the test split">
+<style>
+.title{font:600 16px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
+.arm{font:13px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
+.note{font:12px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
+.value{font:600 13px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
+.axis{stroke:#d2ddd6;stroke-width:1}
+.bar{fill:#2f6f57;transform-origin:250px 0}
+.bar.baseline{fill:#b4632c}
+.ci{stroke:#5d6f66;stroke-width:1.5;opacity:.65}
+@keyframes grow{from{transform:scaleX(0)} to{transform:scaleX(1)}}
+.bar{animation:grow 1.1s cubic-bezier(.2,.7,.3,1) both}
+@media (prefers-reduced-motion: reduce){.bar{animation:none}}
+</style>
+<rect width="720" height="374" fill="#f5f8f6"/>
+<text class="title" x="24" y="32">Success on the 8 test tasks, 3 seeds each</text>
+<text class="arm" x="24" y="82">one model, whole pipeline</text>
+<rect class="bar baseline" x="250" y="68" width="358" height="20" rx="3" style="animation-delay:0.00s"/>
+<line class="ci" x1="523" y1="78" x2="660" y2="78"/>
+<line class="ci" x1="523" y1="72" x2="523" y2="84"/>
+<line class="ci" x1="660" y1="72" x2="660" y2="84"/>
+<text class="value" x="668" y="83">0.88</text>
+<text class="arm" x="24" y="126">agent team, all 3 memories</text>
+<rect class="bar" x="250" y="112" width="290" height="20" rx="3" style="animation-delay:0.08s"/>
+<line class="ci" x1="437" y1="122" x2="626" y2="122"/>
+<line class="ci" x1="437" y1="116" x2="437" y2="128"/>
+<line class="ci" x1="626" y1="116" x2="626" y2="128"/>
+<text class="value" x="634" y="127">0.71</text>
+<text class="arm" x="24" y="170">agent team, episodic only</text>
+<rect class="bar" x="250" y="156" width="256" height="20" rx="3" style="animation-delay:0.16s"/>
+<line class="ci" x1="403" y1="166" x2="608" y2="166"/>
+<line class="ci" x1="403" y1="160" x2="403" y2="172"/>
+<line class="ci" x1="608" y1="160" x2="608" y2="172"/>
+<text class="value" x="616" y="171">0.62</text>
+<text class="arm" x="24" y="214">agent team, semantic only</text>
+<rect class="bar" x="250" y="200" width="239" height="20" rx="3" style="animation-delay:0.24s"/>
+<line class="ci" x1="369" y1="210" x2="608" y2="210"/>
+<line class="ci" x1="369" y1="204" x2="369" y2="216"/>
+<line class="ci" x1="608" y1="204" x2="608" y2="216"/>
+<text class="value" x="616" y="215">0.58</text>
+<text class="arm" x="24" y="258">agent team, no memory</text>
+<rect class="bar" x="250" y="244" width="205" height="20" rx="3" style="animation-delay:0.32s"/>
+<line class="ci" x1="335" y1="254" x2="574" y2="254"/>
+<line class="ci" x1="335" y1="248" x2="335" y2="260"/>
+<line class="ci" x1="574" y1="248" x2="574" y2="260"/>
+<text class="value" x="582" y="259">0.50</text>
+<text class="arm" x="24" y="302">agent team, procedural only</text>
+<rect class="bar" x="250" y="288" width="187" height="20" rx="3" style="animation-delay:0.40s"/>
+<line class="ci" x1="318" y1="298" x2="557" y2="298"/>
+<line class="ci" x1="318" y1="292" x2="318" y2="304"/>
+<line class="ci" x1="557" y1="292" x2="557" y2="304"/>
+<text class="value" x="565" y="303">0.46</text>
+<line class="axis" x1="250" y1="56" x2="250" y2="328"/>
+<text class="note" x="24" y="352">Bars are the mean over tasks of the mean over seeds; the whiskers are 95% bootstrap intervals (tasks, then seeds).</text>
+</svg>

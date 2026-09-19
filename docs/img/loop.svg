@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" width="700" height="340" role="img" aria-label="The agent loop: planner, executor, sandbox, tools, critic, reviser, deliver">
+<style>
+.box{fill:#fff;stroke:#d2ddd6;stroke-width:1.5;rx:10}
+.name{font:600 15px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
+.sub{font:12px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
+.edge{fill:none;stroke:#d2ddd6;stroke-width:2}
+.edge.revise{stroke:#b4632c;stroke-dasharray:5 4}
+.label{font:11px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
+.label.revise{fill:#b4632c}
+.token{fill:#2f6f57}
+@keyframes travel{0%{transform:translate(150px,70px)} 12%{transform:translate(340px,70px)}24%{transform:translate(550px,70px)} 36%{transform:translate(550px,180px)}48%{transform:translate(340px,180px)} 58%{transform:translate(150px,180px)}68%{transform:translate(340px,70px)} 80%{transform:translate(340px,180px)}92%{transform:translate(340px,290px)} 100%{transform:translate(340px,290px)}}
+.token{animation:travel 9s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.token{animation:none;transform:translate(340px,180px)}}
+</style>
+<rect width="700" height="340" fill="#f5f8f6"/>
+<rect class="box" x="40" y="40" width="200" height="60"/>
+<text class="name" x="56" y="66">Planner</text>
+<text class="sub" x="56" y="85">writes the ordered plan</text>
+<rect class="box" x="250" y="40" width="200" height="60"/>
+<text class="name" x="266" y="66">Executor</text>
+<text class="sub" x="266" y="85">writes one step's script</text>
+<rect class="box" x="460" y="40" width="200" height="60"/>
+<text class="name" x="476" y="66">Sandbox</text>
+<text class="sub" x="476" y="85">runs it, no network</text>
+<rect class="box" x="460" y="150" width="200" height="60"/>
+<text class="name" x="476" y="176">Tools</text>
+<text class="sub" x="476" y="195">check the files it wrote</text>
+<rect class="box" x="250" y="150" width="200" height="60"/>
+<text class="name" x="266" y="176">Critic</text>
+<text class="sub" x="266" y="195">accept / revise / escalate</text>
+<rect class="box" x="40" y="150" width="200" height="60"/>
+<text class="name" x="56" y="176">Reviser</text>
+<text class="sub" x="56" y="195">what to change, or re-plan</text>
+<rect class="box" x="250" y="260" width="200" height="60"/>
+<text class="name" x="266" y="286">Deliver</text>
+<text class="sub" x="266" y="305">assemble, re-run clean, smoke test</text>
+<path class="edge" d="M240 70 H250" marker-end="url(#arrow)"/>
+<path class="edge" d="M450 70 H460" marker-end="url(#arrow)"/>
+<path class="edge" d="M560 100 V150" marker-end="url(#arrow)"/>
+<text class="label" x="568" y="125">writes files</text>
+<path class="edge" d="M450 180 H460" marker-end="url(#arrow)"/>
+<path class="edge" d="M240 180 H250" marker-end="url(#arrow)"/>
+<path class="edge revise" d="M140 150 V100" marker-end="url(#arrow)"/>
+<text class="label revise" x="148" y="125">fix, up to 2</text>
+<path class="edge" d="M350 150 V100" marker-end="url(#arrow)"/>
+<text class="label" x="358" y="125">accept: next step</text>
+<path class="edge" d="M350 210 V260" marker-end="url(#arrow)"/>
+<text class="label" x="358" y="235">last step done</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#d2ddd6"/></marker></defs>
+<circle class="token" r="7" cx="0" cy="0"/>
+<text class="sub" x="40" y="324">One step at a time. Two revisions, then the Planner; one re-plan, then a human.</text>
+</svg>
