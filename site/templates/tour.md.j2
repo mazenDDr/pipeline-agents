@@ -1,0 +1,25 @@
+<p class="record">RECORDED TRACE / CREDIT DEFAULT / NO MEMORY</p>
+
+Follow one task through the system, including the wrong turns. This is a saved run, not a polished example rewritten afterwards. Code excerpts are shortened in the source report; every cut is marked.
+
+<div class="notice">The final pipeline passed. That does not mean every decision helped: the Critic rejected a placeholder <code>pipeline.py</code> that delivery would have replaced anyway. The resulting re-plan is part of this record.</div>
+
+## Choose your route
+
+<div class="map">
+<details open><summary>Understand the task</summary><p>Read exactly what the system was asked to deliver, then inspect its first seven-step plan.</p><a href="#the-task-the-agents-were-given">Task ↓</a> · <a href="#the-plan">First plan ↓</a></details>
+<details><summary>Follow the wrong turn</summary><p>The first plan’s final step stalled on a placeholder. The second plan repeats the work with a new set of instructions.</p><a href="#the-plan-after-the-re-plan-v2">Second plan ↓</a></details>
+<details><summary>Inspect the verdict</summary><p>Separate delivery checks from hidden scoring, then compare the model-call cost with what this single run can establish.</p><a href="#what-the-delivery-checks-found">Delivery ↓</a> · <a href="#what-the-hidden-checker-found">Hidden score ↓</a> · <a href="#what-it-cost">Cost ↓</a></details>
+</div>
+
+**How to read the trace:** Python is what the Executor wrote. “What it printed” is the actual process output. Validation findings come from tools; the verdict comes from the Critic. Revision instructions are shown where another attempt was requested. None of those layers alone is the final hidden check.
+
+**Provenance:** [the committed tour report]({{ repo }}/blob/main/docs/tour.md) was exported by [build_tour_doc.py]({{ repo }}/blob/main/scripts/build_tour_doc.py) from the run’s checkpoints and call log. This site renders that report without calling a model or requiring private run files.
+
+<details class="tour-index" markdown="1"><summary>Jump to any step or check</summary>
+
+[TOC]
+
+</details>
+
+---

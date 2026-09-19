@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 272" width="880" height="272" role="img" aria-labelledby="title"><title id="title">Six recorded field runs: team and single-agent calls and latency on three unseen datasets</title><style>
+.bg{fill:#ECEEF1}.card{fill:#FFFFFF;stroke:#DCE0E6}.accent{stroke:#2D5BD6;stroke-width:1.6}
+.lab{font:600 9.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#6B7480;letter-spacing:.1em}
+.hd{font:600 14px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.body{font:400 12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#4A535F}
+.tiny{font:400 10px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#6B7480}
+.mono{font:400 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#171B21}
+.big{font:600 30px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.blue{fill:#2D5BD6}.ok{fill:#2E7D4F}.bad{fill:#C0392B}
+.rule{stroke:#DCE0E6;stroke-width:1}.ci{stroke:#4A535F;stroke-width:1.5}
+.bar{fill:#2D5BD6;transform-box:fill-box;transform-origin:left center;animation:grow 11s infinite}
+.bar.other{fill:#8A93A1}.reveal{animation:show 11s infinite}.late{animation:late 11s infinite}
+@keyframes grow{0%,8%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+@keyframes show{0%,10%{opacity:0}28%,100%{opacity:1}}
+@keyframes late{0%,32%{opacity:0}48%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;opacity:1!important}}
+</style><rect class="bg" width="880" height="272" rx="14"/><text x="28" y="28" class="lab">FRESH DATA · THREE TASKS NEITHER SYSTEM WAS TUNED ON</text><rect x="28" y="48" width="264" height="174" rx="7" class="card"/><text x="44" y="80" class="hd">wine-quality</text><text x="44" y="115" class="mono">Team: 16 calls · 207 s</text><text x="44" y="153" class="mono">Single: 2 calls · 90 s</text><g class="late"><text x="44" y="198" class="lab ok">✓ BOTH PASSED</text></g><rect x="308" y="48" width="264" height="174" rx="7" class="card"/><text x="324" y="80" class="hd">student-grades</text><text x="324" y="115" class="mono">Team: 9 calls · 100 s</text><text x="324" y="153" class="mono">Single: 1 calls · 26 s</text><g class="late"><text x="324" y="198" class="lab ok">✓ BOTH PASSED</text></g><rect x="588" y="48" width="264" height="174" rx="7" class="card"/><text x="604" y="80" class="hd">household-power</text><text x="604" y="115" class="mono">Team: 9 calls · 311 s</text><text x="604" y="153" class="mono">Single: 1 calls · 137 s</text><g class="late"><text x="604" y="198" class="lab ok">✓ BOTH PASSED</text></g><text x="28" y="250" class="tiny">Six runs, six passes. A sanity check on unseen datasets, not evidence of a universal success rate.</text></svg>

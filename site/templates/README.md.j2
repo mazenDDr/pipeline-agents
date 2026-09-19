@@ -23,10 +23,10 @@
 
 | | |
 |---|---|
-| **Structure** | Success on eight held-out tasks, three seeds each: **0.88 single agent vs 0.50 team**. Paired difference +0.38 [0.04, 0.71]. The simpler system won this comparison. |
-| **Memory** | All three stores together reached **0.71**, up from 0.50. The paired interval includes zero; this benchmark does not establish that memory helps. |
-| **Critic** | Agreement with reference labels: **κ 0.30 [0.04, 0.54]**, across 50 reviewed verdicts. Confidence was not a reliable substitute for checking artifacts. |
-| **Fresh data** | **6/6 runs passed** on wine quality, student grades and household power. The team used 8–9 times the model calls. One run per system and task. |
+{% set delta = comparisons.baseline_multi %}| **Structure** | Success on eight held-out tasks, three seeds each: **{{ '%.2f'|format(arms.baseline.success.mean) }} single agent vs {{ '%.2f'|format(arms.multi.success.mean) }} team**. Paired difference {{ '%+.2f'|format(delta.difference) }} [{{ '%.2f'|format(delta.ci[0]) }}, {{ '%.2f'|format(delta.ci[1]) }}]. The simpler system won this comparison. |
+| **Memory** | All three stores together reached **{{ '%.2f'|format(arms.memall.success.mean) }}**, up from {{ '%.2f'|format(arms.multi.success.mean) }}. The paired interval includes zero; this benchmark does not establish that memory helps. |
+| **Critic** | Agreement with reference labels: **κ {{ '%.2f'|format(trust.kappa) }} [{{ '%.2f'|format(trust.kappa_ci[0]) }}, {{ '%.2f'|format(trust.kappa_ci[1]) }}]**, across {{ trust.labelled }} reviewed verdicts. Confidence was not a reliable substitute for checking artifacts. |
+| **Fresh data** | **{{ field|selectattr('success')|list|length }}/{{ field|length }} runs passed** on wine quality, student grades and household power. The team used 8–9 times the model calls. One run per system and task. |
 | **Compute** | Local open weights on one RTX 5060 Ti, 16 GB. No paid model API. Reported **shadow $** are token counts × pinned prices, not money spent. |
 
 ## How it works
@@ -51,11 +51,9 @@ The team's extra calls often bought a correct diagnosis without a workable repai
 
 | Setup | Success [95% CI] | Calls | Shadow $ | Seconds |
 |---|---|---:|---:|---:|
-| Single agent | 0.88 [0.67, 1.00] | 1.8 | 0.0016 | 153 |
-| Team · all memories | 0.71 [0.46, 0.92] | 20.9 | 0.0093 | 363 |
-| Team · no memory | 0.50 [0.21, 0.79] | 23.0 | 0.0097 | 373 |
-
-Comparisons are paired on task and seed, with a nested bootstrap over tasks and seeds. The baseline's lead over the all-memory team is uncertain (+0.17 [-0.17, 0.50]). Full tables and confounds: [`docs/ablations.md`](docs/ablations.md).
+{% for key in ['baseline', 'memall', 'multi'] %}{% set r = arms[key] %}| {{ labels[key] }} | {{ '%.2f'|format(r.success.mean) }} [{{ '%.2f'|format(r.success.ci[0]) }}, {{ '%.2f'|format(r.success.ci[1]) }}] | {{ '%.1f'|format(r.model_calls.mean) }} | {{ '%.4f'|format(r.shadow_usd.mean) }} | {{ '%.0f'|format(r.seconds.mean) }} |
+{% endfor %}
+{% set delta = comparisons.baseline_memall %}Comparisons are paired on task and seed, with a nested bootstrap over tasks and seeds. The baseline's lead over the all-memory team is uncertain ({{ '%+.2f'|format(delta.difference) }} [{{ '%.2f'|format(delta.ci[0]) }}, {{ '%.2f'|format(delta.ci[1]) }}]). Full tables and confounds: [`docs/ablations.md`](docs/ablations.md).
 
 ### Remembering a strategy does not mean it is the right strategy
 

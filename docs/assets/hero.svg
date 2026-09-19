@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 344" width="880" height="344" role="img" aria-labelledby="title"><title id="title">One wine-quality task: team and single-agent results from the recorded field test</title><style>
+.bg{fill:#ECEEF1}.card{fill:#FFFFFF;stroke:#DCE0E6}.accent{stroke:#2D5BD6;stroke-width:1.6}
+.lab{font:600 9.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#6B7480;letter-spacing:.1em}
+.hd{font:600 14px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.body{font:400 12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#4A535F}
+.tiny{font:400 10px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#6B7480}
+.mono{font:400 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#171B21}
+.big{font:600 30px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;fill:#171B21}
+.blue{fill:#2D5BD6}.ok{fill:#2E7D4F}.bad{fill:#C0392B}
+.rule{stroke:#DCE0E6;stroke-width:1}.ci{stroke:#4A535F;stroke-width:1.5}
+.bar{fill:#2D5BD6;transform-box:fill-box;transform-origin:left center;animation:grow 11s infinite}
+.bar.other{fill:#8A93A1}.reveal{animation:show 11s infinite}.late{animation:late 11s infinite}
+@keyframes grow{0%,8%{transform:scaleX(0)}35%,100%{transform:scaleX(1)}}
+@keyframes show{0%,10%{opacity:0}28%,100%{opacity:1}}
+@keyframes late{0%,32%{opacity:0}48%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;opacity:1!important}}
+</style><rect class="bg" width="880" height="344" rx="14"/><text x="28" y="28" class="lab">ONE REAL TASK · WINE QUALITY · RECORDED FIELD TEST</text><rect x="28" y="44" width="264" height="228" rx="7" class="card"/><text x="44" y="68" class="lab">THE INPUT</text><rect x="308" y="44" width="264" height="228" rx="7" class="card"/><text x="324" y="68" class="lab">THE TEAM</text><rect x="588" y="44" width="264" height="228" rx="7" class="card accent"/><text x="604" y="68" class="lab">ONE MODEL</text><text x="44" y="99" class="hd">Predict quality before tasting</text><text x="44" y="125" class="body">Eleven laboratory</text><text x="44" y="144" class="body">measurements. Predict the</text><text x="44" y="163" class="body">panel’s quality score.</text><text x="44" y="194" class="mono">3,918 wines given</text><text x="44" y="217" class="mono">980 wines held back</text><text x="44" y="248" class="tiny">Hidden labels stay outside the run.</text><g class="reveal"><text x="324" y="111" class="big">0.4485</text><text x="324" y="132" class="tiny">mean absolute error · lower is better</text><text x="324" y="167" class="mono">16 model calls · 207 s</text><text x="324" y="192" class="mono">0.0049 shadow $</text><text x="324" y="241" class="lab ok">✓ PASSED THE HIDDEN CHECK</text></g><g class="late"><text x="604" y="111" class="big">0.4467</text><text x="604" y="132" class="tiny">mean absolute error · lower is better</text><text x="604" y="167" class="mono">2 model calls · 90 s</text><text x="604" y="192" class="mono">0.0013 shadow $</text><text x="604" y="241" class="lab ok">✓ PASSED THE HIDDEN CHECK</text></g><text x="28" y="302" class="body">Both built a working model. The team used eight times the calls for a similar error.</text><text x="28" y="324" class="tiny">One run per system here. The controlled comparison below uses eight held-out tasks and three seeds.</text></svg>

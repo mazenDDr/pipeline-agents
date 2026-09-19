@@ -21,6 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+docs = ["markdown>=3.7,<4"]
 dev = ["pytest>=8.2", "ruff>=0.5", "playwright>=1.44"]  # playwright: checking the app in real Chrome
 app = ["streamlit>=1.36"]
 

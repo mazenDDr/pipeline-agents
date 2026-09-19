@@ -1,0 +1,112 @@
+<p class="record">READ THE SYSTEM / FOLLOW THE EVIDENCE</p>
+
+A CSV and a goal go in. A runnable pandas/sklearn pipeline comes out—or a recorded reason to stop. This guide connects the code to the experiment: what each part does, what it leaves behind, and what the measurements say about keeping it.
+
+<figure><img src="assets/hero.svg" alt="Recorded wine-quality comparison: both systems pass, using 16 and 2 model calls."><figcaption>Start with the result, not the number of agents. <a href="field-test/">Inspect this field test →</a></figcaption></figure>
+
+## A map of the system
+
+Open a card to see its inputs, outputs and source. Follow the normal run left to right; repairs return to execution, while a re-plan returns to the Planner.
+
+<div class="map">
+<details><summary>01 · Profile and state</summary><p>Reads the goal, data files and dictionary. Writes a dataset profile and typed <code>RunState</code>. <code>profile_dir</code> inspects the data; <code>init</code> retrieves memory.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/tools/profile.py">tools/profile.py ↗</a><br><a href="{{ repo }}/blob/main/src/pipeline_agents/schemas.py">schemas.py ↗</a></details>
+<details><summary>02 · Planner</summary><p>Reads the goal, profile and retrieved context. Writes an ordered <code>Plan</code>: each step has inputs, outputs and acceptance checks. A re-plan also sees the earlier plan and escalation reason.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a></details>
+<details><summary>03 · Executor</summary><p>Reads one step, prior artifacts and retrieved skills. Writes Python, runs it, and records stdout, stderr and artifacts in a <code>StepAttempt</code>.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a><br><a href="{{ repo }}/blob/main/src/pipeline_agents/sandbox/runner.py">sandbox/runner.py ↗</a></details>
+<details><summary>04 · Tools and Critic</summary><p>Reads actual files, not just the Executor’s claims. Validators produce findings; the Critic returns an accept, revise or escalate <code>Verdict</code> with confidence.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/tools/validators.py">tools/validators.py ↗</a><br><a href="{{ repo }}/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a></details>
+<details><summary>05 · Reviser and routing</summary><p>Reads the step, verdict and revision history. Writes repair instructions or an escalation. <code>build_graph</code> routes the result, limits loops and checkpoints every node to SQLite.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/agents/roles.py">agents/roles.py ↗</a><br><a href="{{ repo }}/blob/main/src/pipeline_agents/graph/build.py">graph/build.py ↗</a></details>
+<details><summary>06 · Delivery and scoring</summary><p>Assembles accepted scripts, reruns them cleanly and smoke-tests predictions. Only after the graph stops does the benchmark checker use hidden labels. App uploads have no hidden reference answer.</p><a href="{{ repo }}/blob/main/src/pipeline_agents/graph/checks.py">graph/checks.py ↗</a><br><a href="{{ repo }}/blob/main/src/pipeline_agents/bench/checker.py">bench/checker.py ↗</a></details>
+</div>
+
+<figure><img src="assets/pipeline.svg" alt="The agent loop, its saved artifacts, and the separate hidden checker."><figcaption>The diagram groups the work into five stages. The graph also names its recovery and bookkeeping nodes explicitly: revise, advance and human.</figcaption></figure>
+
+<h2 id="profile">01 / Read what is actually in the data</h2>
+
+The profiler reads formats, columns, row counts and missing values before a model writes code. The data dictionary matters: a numeric column can be a category, a sentinel can look like a measurement, and two identical rows can still be two real purchases.
+
+**A real failure:** repeated retail transactions were labelled as duplicates. Fourteen team runs removed valid purchases. The profiler’s wording was changed after the experiment; the original scores were not rewritten. A useful warning must describe what was observed without pretending that the correct cleaning action is already known.
+
+**Files:** [profile.py]({{ repo }}/blob/main/src/pipeline_agents/tools/profile.py), [the failure taxonomy]({{ repo }}/blob/main/docs/failure_taxonomy.md).
+
+<h2 id="plan">02 / Turn the goal into inspectable steps</h2>
+
+The Planner produces a typed plan, not a free-form conversation. Each step names its intent and acceptance checks. The state keeps both the plan version and the evidence from attempts, so a re-plan can be inspected afterwards.
+
+The [credit-default tour](tour/#the-plan) begins with loading, cleaning, feature engineering, splitting, training, evaluation and reporting. It also shows the second plan. The first plan was not erased from the story just because the final pipeline passed.
+
+**Why separate a Planner?** It makes the proposed work inspectable. That is an engineering property, not proof that it improves answers: the whole-pipeline baseline won the measured no-memory comparison.
+
+**Files:** [planner.py]({{ repo }}/blob/main/src/pipeline_agents/agents/roles.py), [schemas.py]({{ repo }}/blob/main/src/pipeline_agents/schemas.py), [versioned prompts]({{ repo }}/tree/main/prompts).
+
+<h2 id="execute">03 / Run the code and keep the evidence</h2>
+
+The Executor writes a Python step and runs it in a per-run workspace. On Linux, process namespaces and resource limits restrict access, network use, memory and execution time. The model does not see the hidden benchmark answers. On macOS, the fallback runner is a timeout-controlled subprocess, **not an isolation boundary**.
+
+The Observer records each model request and response, prompt versions, tokens, latency and shadow cost. Parsed plans, findings and verdicts live in the checkpointed state. These are complementary records, not interchangeable logs.
+
+**Measured limitation:** seven failed runs exceeded the sandbox’s memory limit. They were treated as infrastructure failures and retried, rather than asking the Reviser to choose a smaller representation. Isolation worked; the recovery policy was the wrong tool for that failure.
+
+**Files:** [executor.py]({{ repo }}/blob/main/src/pipeline_agents/agents/roles.py), [runner.py]({{ repo }}/blob/main/src/pipeline_agents/sandbox/runner.py), [observer.py]({{ repo }}/blob/main/src/pipeline_agents/harness/observer.py).
+
+<h2 id="check">04 / Check the artifacts, then check the checker</h2>
+
+Validation tools inspect leakage, missing values, row accounting and other concrete properties. The Critic reads those findings and chooses a verdict. The Reviser can request another attempt; exhausted repairs can trigger a re-plan. Low confidence or exhausted limits can stop for a human.
+
+<figure><img src="assets/trust.svg" alt="Reference-label audit of the Critic, including strict and lenient errors."><figcaption>The labels and interval come from <a href="{{ repo }}/blob/main/outputs/trust/t10/scores.json">the committed trust audit</a>.</figcaption></figure>
+
+**Why keep an independent check?** Critic agreement was κ {{ '%.2f'|format(trust.kappa) }}. Its confidence was almost always maximal. The run’s confident verdict is evidence of what the model believed, not evidence that the artifact was correct. [Read the audit]({{ repo }}/blob/main/docs/trust.md).
+
+<h2 id="deliver">05 / Deliver from a clean start</h2>
+
+Delivery assembles accepted scripts into `output/pipeline.py`, reruns them from a clean copy and smoke-tests prediction. The graph has nine nodes: `init`, `plan`, `execute`, `validate`, `critic`, `revise`, `advance`, `deliver` and `human`. `advance` moves the cursor after an accepted step; `human` is an explicit stop path.
+
+The benchmark wrapper then applies the hidden checker. A successful graph status does **not** guarantee a passed benchmark. Predictive tasks also need coverage of the hidden rows, an adequate score and an honest validation estimate; analytical tasks need the right answer.
+
+The [tour’s final checks](tour/#what-the-hidden-checker-found) show both layers separately. This boundary also explains why an uploaded CSV can receive delivery checks but not a claim of hidden-test accuracy.
+
+**Files:** [graph/build.py]({{ repo }}/blob/main/src/pipeline_agents/graph/build.py), [bench/checker.py]({{ repo }}/blob/main/src/pipeline_agents/bench/checker.py), [benchmark contract]({{ repo }}/blob/main/docs/benchmark.md).
+
+## What did the extra structure buy?
+
+<figure><img src="assets/results.svg" alt="Six configurations compared on held-out tasks, with bootstrap intervals."><figcaption>Eight held-out tasks, three seeds each. <a href="{{ repo }}/blob/main/docs/ablations.md">Method, paired comparisons and confounds →</a></figcaption></figure>
+
+The single agent reached {{ '%.2f'|format(arms.baseline.success.mean) }} success, the no-memory team {{ '%.2f'|format(arms.multi.success.mean) }}. The baseline can rewrite the whole program; the team can diagnose a fault in an earlier file while only repairing the current step. More feedback did not automatically produce a better repair.
+
+<figure><img src="assets/memory.svg" alt="Semantic, procedural and episodic memory retrieval routes."><figcaption>Three stores with different jobs. <a href="{{ repo }}/blob/main/src/pipeline_agents/memory/system.py">Inspect the retrieval and mining rules →</a></figcaption></figure>
+
+All stores together reached {{ '%.2f'|format(arms.memall.success.mean) }}. The paired improvement over no memory still includes zero. Development-only mining protects the evaluation split, but it does not guarantee that a retrieved strategy is useful for the next dataset.
+
+## Take it out of the benchmark
+
+The [field test](field-test/) uses fresh wine, student and household-power data. The [tour](tour/) follows a single credit-default run through plans, code, repairs and scoring. Both are recorded evidence, not live model demos.
+
+## Rebuild this guide
+
+```bash
+pip install -e '.[docs]'
+python scripts/build_portfolio.py
+python -m http.server 8000 --directory site
+# Open http://localhost:8000
+```
+
+No model, dataset download or private checkpoint is needed. The builder reads committed summaries and the existing generated research documents. To run agents, follow the [Linux setup in the README]({{ repo }}#run-it-yourself).
+
+## Repository map
+
+Line counts are generated from the source tree on each build. Expand to inspect the complete map.
+
+<details><summary>Python source files and line counts</summary>
+<div class="table-wrap"><table><thead><tr><th>File</th><th>Lines</th></tr></thead><tbody>
+{% for file in tree %}<tr><td><a href="{{ repo }}/blob/main/{{ file.path }}">{{ file.path }}</a></td><td>{{ file.lines }}</td></tr>
+{% endfor %}</tbody></table></div></details>
+
+## Glossary
+
+| Term | Meaning here |
+|---|---|
+| Agent role | A model call with its own inputs, prompt and typed output contract. |
+| Artifact | A file produced by a step and available for later steps or checks. |
+| Checkpoint | The typed run state saved after a graph node, supporting inspection and resume. |
+| Hidden checker | Code outside the agent graph that compares output against held-back evidence. |
+| Shadow $ | Token counts multiplied by a pinned price table; not a bill. |
+| Paired interval | Uncertainty on a difference using the same tasks and seeds for both systems. |
+| Re-plan | Replace the current plan after escalation, retaining the earlier evidence. |

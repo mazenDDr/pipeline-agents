@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pipeline-agents · Field test</title>
+<meta name="description" content="A measured experiment in agents that build data pipelines. Real runs, checks, failures and comparisons.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<nav><a class="brand" href="../index.html">▤ pipeline-agents</a><div>
+<a href="../index.html">Field guide</a><a href="../tour/">Tour</a>
+<a href="../field-test/">Field test</a><a href="https://github.com/mazenDDr/pipeline-agents">Source ↗</a>
+<button id="theme" aria-label="Toggle color theme">◐</button></div></nav>
+<main><header><p class="label">A MEASURED EXPERIMENT / FIELD TEST</p>
+<h1>Field test</h1><p class="lede">Raw data. A goal. Every decision left on the record.</p></header>
+<article><p class="record">RECORDED RUNS / THREE UNSEEN DATASETS / TWO SYSTEMS</p>
+
+<p>Does the system work beyond the tasks used to build it? Give both systems the same fresh data and a concrete goal, compute references separately, and inspect the actual outputs. No model runs when you open this page.</p>
+<figure><img src="../assets/field.svg" alt="Calls and wall time for both systems across three fresh datasets."><figcaption>6 of 6 recorded runs passed. One run per system and task—not a confidence interval or a general success-rate claim.</figcaption></figure>
+
+<h2 id="pick-a-task">Pick a task</h2>
+<div class="map">
+<details open><summary>Wine quality · prediction</summary><p>Predict a sensory score from eleven laboratory measurements. The checker keeps 980 wines hidden and measures mean absolute error. Lower is better.</p><a href="#wine-quality">Read the goal and both results ↓</a></details>
+<details><summary>Student grades · analysis</summary><p>Read a semicolon-separated table. Report student count and final-grade means grouped by prior failures and study time. Compare the returned JSON with the reference.</p><a href="#student-grades">Read the goal and both answers ↓</a></details>
+<details><summary>Household power · time series</summary><p>Find December 2008 inside two million minute readings. Parse day-first dates and missing-value markers, then calculate daily means and the peak day.</p><a href="#household-power">Read the goal and both answers ↓</a></details>
+</div>
+
+<h2 id="the-comparison-without-hiding-the-cost">The comparison, without hiding the cost</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Task</th>
+<th>System</th>
+<th>Passed</th>
+<th style="text-align: right;">Model calls</th>
+<th style="text-align: right;">Seconds</th>
+<th style="text-align: right;">Shadow $</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#wine-quality">wine-quality</a></td>
+<td>Team · no memory</td>
+<td>yes</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">207.3</td>
+<td style="text-align: right;">0.00492</td>
+</tr>
+<tr>
+<td><a href="#wine-quality">wine-quality</a></td>
+<td>Single agent</td>
+<td>yes</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">90.2</td>
+<td style="text-align: right;">0.00131</td>
+</tr>
+<tr>
+<td><a href="#student-grades">student-grades</a></td>
+<td>Team · no memory</td>
+<td>yes</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">99.6</td>
+<td style="text-align: right;">0.00268</td>
+</tr>
+<tr>
+<td><a href="#student-grades">student-grades</a></td>
+<td>Single agent</td>
+<td>yes</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">26.3</td>
+<td style="text-align: right;">0.00045</td>
+</tr>
+<tr>
+<td><a href="#household-power">household-power</a></td>
+<td>Team · no memory</td>
+<td>yes</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">310.9</td>
+<td style="text-align: right;">0.00251</td>
+</tr>
+<tr>
+<td><a href="#household-power">household-power</a></td>
+<td>Single agent</td>
+<td>yes</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">136.8</td>
+<td style="text-align: right;">0.00049</td>
+</tr>
+</tbody>
+</table></div>
+<p>Both systems returned a correct result for each task. The team used more model calls every time. This is a transfer sanity check with separate reference calculations, not a rerun of the controlled benchmark or evidence that all future uploads will pass.</p>
+<p><strong>Sources:</strong> <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/outputs/field/summary.json">run summary</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/outputs/field/reference.json">reference answers</a>, <a href="https://github.com/mazenDDr/pipeline-agents/blob/main/scripts/build_field_doc.py">report builder</a>. The report below preserves the recorded goals, outputs and marked excerpts.</p>
+<hr />
+<p>The benchmark tasks were built for this system: the traps were planted on purpose and the thresholds were set from reference solutions. A field test asks a different question. Three public datasets that are not in the benchmark, a goal written the way someone would actually ask for it, and an answer computed here in pandas and never shown to the agents. Both systems ran once on each, on the same data, with the same budget. <strong>6 of 6 runs got it right.</strong></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>task</th>
+<th>what was asked</th>
+<th>the team</th>
+<th>the single-agent baseline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wine-quality</code></td>
+<td>a model, scored by mae on 980 held-back rows</td>
+<td>passed - 16 model calls, 0.0049 shadow $, 207 s</td>
+<td>passed - 2 model calls, 0.0013 shadow $, 90 s</td>
+</tr>
+<tr>
+<td><code>student-grades</code></td>
+<td>a number per group, checked against pandas</td>
+<td>passed - 9 model calls, 0.0027 shadow $, 100 s</td>
+<td>passed - 1 model call, 0.0004 shadow $, 26 s</td>
+</tr>
+<tr>
+<td><code>household-power</code></td>
+<td>a number per group, checked against pandas</td>
+<td>passed - 9 model calls, 0.0025 shadow $, 311 s</td>
+<td>passed - 1 model call, 0.0005 shadow $, 137 s</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="the-three-tasks">The three tasks</h2>
+<h3 id="wine-quality">wine-quality</h3>
+<p><em>UCI Wine Quality (white), 4,898 wines.</em> A prediction task on a dataset with no traps at all: eleven clean numeric measurements and a score. The point is what the systems do when nothing is hidden.</p>
+<p>The goal, as the agents received it:</p>
+<blockquote>
+<p>A winery wants to score the quality of a white wine from its laboratory measurements, before the tasting panel sees it. <code>data/wine.csv</code> holds measurements and the panel's score for wines that have already been tasted. Build a model that predicts <code>quality</code> for new wines; it will be judged by mean absolute error on wines held back from you.</p>
+</blockquote>
+<p>Measured on this exact split before any agent ran: always predicting the mean gives MAE 0.658, a linear regression 0.575, a random forest 0.424. The run had to reach 0.5 to pass, so a delivered model has to beat a one-line regression.</p>
+<ul>
+<li><strong>The team</strong>: mae 0.4485 over 980 held-back wines</li>
+<li><strong>The baseline</strong>: mae 0.4467 over 980 held-back wines</li>
+</ul>
+<p>Both reached for a random forest and both landed just under the threshold: better than a linear regression (0.575) and short of the reference forest (0.424). Neither tuned anything, and neither compared its model with a simpler one.</p>
+<h3 id="student-grades">student-grades</h3>
+<p><em>UCI Student Performance (mathematics), 395 students.</em> An analytical task on a small file that is semicolon-separated with quoted text, where the interesting part is reading the file correctly and grouping by two coded columns.</p>
+<p>The goal, as the agents received it:</p>
+<blockquote>
+<p>Using <code>data/students.csv</code> (see <code>data/README.md</code>), describe how the final grade relates to past failures and to time spent studying.</p>
+<p><code>output/answer.json</code> must be an object with three keys:
+- <code>"students"</code>: the number of students in the file;
+- <code>"mean_final_grade_by_failures"</code>: an object mapping the number of past class failures ("0", "1", "2", "3") to the mean of <code>G3</code> for those students;
+- <code>"mean_final_grade_by_studytime"</code>: an object mapping the study-time code ("1", "2", "3", "4") to the mean of <code>G3</code> for those students.</p>
+</blockquote>
+<p>The reference answer, computed in pandas by <code>pipeline_agents.bench.field</code> and never shown to the agents (every number must match within 0.1% of itself):</p>
+<pre><code class="language-json">{
+ &quot;students&quot;: 395,
+ &quot;mean_final_grade_by_failures&quot;: {
+  &quot;0&quot;: 11.253205128205128,
+  &quot;1&quot;: 8.12,
+  &quot;2&quot;: 6.235294117647059,
+  &quot;3&quot;: 5.6875
+ },
+ &quot;mean_final_grade_by_studytime&quot;: {
+  &quot;1&quot;: 10.047619047619047,
+  &quot;2&quot;: 10.171717171717171,
+  &quot;3&quot;: 11.4,
+  &quot;4&quot;: 11.25925925925926
+ }
+}
+...
+</code></pre>
+<ul>
+<li><strong>The team</strong>: every number matches the reference</li>
+<li><strong>The baseline</strong>: every number matches the reference</li>
+</ul>
+<p>Both parsed the file and matched all nine numbers. The baseline did it in a single model call.</p>
+<h3 id="household-power">household-power</h3>
+<p><em>UCI Individual Household Electric Power Consumption, 2,075,259 minutes.</em> The hardest of the three for a machine: 2,075,259 rows, readings written as <code>?</code>, dates as DD/MM/YYYY, and a question about one month inside four years of minutes.</p>
+<p>The goal, as the agents received it:</p>
+<blockquote>
+<p>Using <code>data/power.csv</code> (see <code>data/README.md</code>), summarise household electricity use in December 2008.</p>
+<p><code>output/answer.json</code> must be an object with three keys:
+- <code>"missing_minutes"</code>: the number of minutes in December 2008 whose active power reading is missing;
+- <code>"daily_mean_active_power"</code>: an object mapping each date of December 2008 as "YYYY-MM-DD" to the mean of <code>Global_active_power</code> over that day's valid readings, in kilowatts;
+- <code>"peak_day"</code>: the date with the highest mean.</p>
+</blockquote>
+<p>The reference answer, computed in pandas by <code>pipeline_agents.bench.field</code> and never shown to the agents (every number must match within 0.1% of itself):</p>
+<pre><code class="language-json">{
+ &quot;missing_minutes&quot;: 71,
+ &quot;daily_mean_active_power&quot;: {
+  &quot;2008-12-01&quot;: 1.1225958333333332,
+  &quot;2008-12-02&quot;: 1.2454472222222222,
+  &quot;2008-12-03&quot;: 1.218863888888889,
+  &quot;2008-12-04&quot;: 1.2073874999999998,
+  &quot;2008-12-05&quot;: 1.4295958333333334,
+  &quot;2008-12-06&quot;: 1.7526638888888888,
+  &quot;2008-12-07&quot;: 1.7130138888888888,
+  &quot;2008-12-08&quot;: 1.297663888888889,
+  &quot;2008-12-09&quot;: 1.3910722222222223,
+  &quot;2008-12-10&quot;: 1.540890510948905,
+  &quot;2008-12-11&quot;: 0.9948069444444444,
+  &quot;2008-12-12&quot;: 1.2607875,
+  &quot;2008-12-13&quot;: 1.2677597222222223,
+  &quot;2008-12-14&quot;: 1.390361111111111,
+  &quot;2008-12-15&quot;: 1.2468402777777778,
+  &quot;2008-12-16&quot;: 1.2479791666666666,
+  &quot;2008-12-17&quot;: 1.4574902777777778,
+  &quot;2008-12-18&quot;: 1.2062083333333333,
+  &quot;2008-12-19&quot;: 1.3070222222222223,
+  &quot;2008-12-20&quot;: 1.5583752605976373,
+  &quot;2008-12-21&quot;: 1.8358402777777778,
+  &quot;2008-12-22&quot;: 1.3998666666666666,
+  &quot;2008-12-23&quot;: 1.2486722222222222,
+  &quot;2008-12-24&quot;: 0.88169305555
+...
+</code></pre>
+<ul>
+<li><strong>The team</strong>: every number matches the reference</li>
+<li><strong>The baseline</strong>: every number matches the reference</li>
+</ul>
+<p>Both read the file with <code>na_values='?'</code> and an explicit <code>format='%d/%m/%Y'</code>, so neither lost a day to a misparsed date, and both matched the count of missing minutes, all 31 daily means and the peak day. It is worth putting next to T11, where runs died on the 4 GB sandbox limit: the limit is not a problem for two million rows read sensibly, it was a problem for a dense one-hot matrix of a hundred thousand.</p>
+<h2 id="what-this-says">What this says</h2>
+<ul>
+<li><strong>On unseen data with a clear goal, both systems work.</strong> Six runs, six right answers, including a two-million-row file and a model that had to beat a linear regression.</li>
+<li><strong>The team's machinery bought nothing here.</strong> Same answers as the single model, for 4 to 9 times the model calls and 2 to 3 times the wall clock. That is the same finding as <code>docs/ablations.md</code>, on data neither system was tuned for.</li>
+<li><strong>This is why the benchmark has traps.</strong> These three tasks have no planted pitfalls, and everything passed. The differences between systems only appear where a dataset punishes a plausible mistake.</li>
+</ul>
+<h2 id="what-it-does-not-say">What it does not say</h2>
+<ul>
+<li>One run per system per task, and three tasks. This is a sanity check on unseen data, not a measurement; the measured comparison is <code>docs/ablations.md</code>.</li>
+<li>I wrote these goals, so they are clear and they ask for things the data can answer. A goal that is vague, or asks for something the data cannot support, is a different test.</li>
+<li>The references are my own pandas code. They are unit-tested on small frames, and the agents' answers matching them to the last digit is evidence for both.</li>
+</ul></article>
+<footer>Built from committed run summaries and research documents. Recorded results; no model runs in this page.
+<a href="https://github.com/mazenDDr/pipeline-agents/blob/main/scripts/build_portfolio.py">Rebuild and inspect the sources ↗</a></footer>
+</main><script src="../assets/site.js"></script>
+</body></html>

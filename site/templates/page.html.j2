@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pipeline-agents · {{ title }}</title>
+<meta name="description" content="A measured experiment in agents that build data pipelines. Real runs, checks, failures and comparisons.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="{{ prefix }}assets/style.css">
+</head>
+<body>
+<nav><a class="brand" href="{{ prefix }}index.html">▤ pipeline-agents</a><div>
+<a href="{{ prefix }}index.html">Field guide</a><a href="{{ prefix }}tour/">Tour</a>
+<a href="{{ prefix }}field-test/">Field test</a><a href="{{ repo }}">Source ↗</a>
+<button id="theme" aria-label="Toggle color theme">◐</button></div></nav>
+<main><header><p class="label">A MEASURED EXPERIMENT / {{ title|upper }}</p>
+<h1>{{ title }}</h1><p class="lede">Raw data. A goal. Every decision left on the record.</p></header>
+<article>{{ content }}</article>
+<footer>Built from committed run summaries and research documents. Recorded results; no model runs in this page.
+<a href="{{ repo }}/blob/main/scripts/build_portfolio.py">Rebuild and inspect the sources ↗</a></footer>
+</main><script src="{{ prefix }}assets/site.js"></script>
+</body></html>
