@@ -1,52 +1,89 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" width="700" height="340" role="img" aria-label="The agent loop: planner, executor, sandbox, tools, critic, reviser, deliver">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 444" width="940" height="444" role="img" aria-label="The exact pipeline-agents graph: init, plan, execute, validate, critic, advance, deliver, revise and human, followed by the benchmark checker">
 <style>
-.box{fill:#fff;stroke:#d2ddd6;stroke-width:1.5;rx:10}
-.name{font:600 15px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
-.sub{font:12px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
-.edge{fill:none;stroke:#d2ddd6;stroke-width:2}
-.edge.revise{stroke:#b4632c;stroke-dasharray:5 4}
-.label{font:11px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
-.label.revise{fill:#b4632c}
+.box{fill:#fff;stroke:#d2ddd6;stroke-width:1.5}
+.box.model,.box.success{fill:#edf6f1;stroke:#2f6f57}
+.box.warn{fill:#fff5ed;stroke:#b4632c}
+.box.outer{fill:none;stroke:#5d6f66;stroke-dasharray:5 4}
+.name{font:600 14px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#1d2b24}
+.sub{font:11px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66}
+.edge{fill:none;stroke:#d2ddd6;stroke-width:2;marker-end:url(#arrow)}
+.edge.loop{stroke:#b4632c;stroke-dasharray:5 4;marker-end:url(#arrow-warn)}
+.edge.outer{stroke:#5d6f66;stroke-dasharray:5 4;marker-end:url(#arrow-muted)}
+.label{font:10px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66;paint-order:stroke;stroke:#f5f8f6;stroke-width:4px}
+.label.loop{fill:#b4632c}
+.section{font:600 11px ui-sans-serif, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;fill:#5d6f66;letter-spacing:.08em}
 .token{fill:#2f6f57}
-@keyframes travel{0%{transform:translate(150px,70px)} 12%{transform:translate(340px,70px)}24%{transform:translate(550px,70px)} 36%{transform:translate(550px,180px)}48%{transform:translate(340px,180px)} 58%{transform:translate(150px,180px)}68%{transform:translate(340px,70px)} 80%{transform:translate(340px,180px)}92%{transform:translate(340px,290px)} 100%{transform:translate(340px,290px)}}
-.token{animation:travel 9s ease-in-out infinite}
-@media (prefers-reduced-motion: reduce){.token{animation:none;transform:translate(340px,180px)}}
+@keyframes travel{0%{transform:translate(85px,88px)} 12%{transform:translate(239px,88px)}24%{transform:translate(393px,88px)} 36%{transform:translate(547px,88px)}48%{transform:translate(701px,88px)} 60%{transform:translate(855px,88px)}72%{transform:translate(701px,220px)} 84%{transform:translate(855px,220px)}100%{transform:translate(855px,336px)}}
+.token{animation:travel 10s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.token{animation:none;transform:translate(855px,336px)}}
 </style>
-<rect width="700" height="340" fill="#f5f8f6"/>
-<rect class="box" x="40" y="40" width="200" height="60"/>
-<text class="name" x="56" y="66">Planner</text>
-<text class="sub" x="56" y="85">writes the ordered plan</text>
-<rect class="box" x="250" y="40" width="200" height="60"/>
-<text class="name" x="266" y="66">Executor</text>
-<text class="sub" x="266" y="85">writes one step's script</text>
-<rect class="box" x="460" y="40" width="200" height="60"/>
-<text class="name" x="476" y="66">Sandbox</text>
-<text class="sub" x="476" y="85">runs it, no network</text>
-<rect class="box" x="460" y="150" width="200" height="60"/>
-<text class="name" x="476" y="176">Tools</text>
-<text class="sub" x="476" y="195">check the files it wrote</text>
-<rect class="box" x="250" y="150" width="200" height="60"/>
-<text class="name" x="266" y="176">Critic</text>
-<text class="sub" x="266" y="195">accept / revise / escalate</text>
-<rect class="box" x="40" y="150" width="200" height="60"/>
-<text class="name" x="56" y="176">Reviser</text>
-<text class="sub" x="56" y="195">what to change, or re-plan</text>
-<rect class="box" x="250" y="260" width="200" height="60"/>
-<text class="name" x="266" y="286">Deliver</text>
-<text class="sub" x="266" y="305">assemble, re-run clean, smoke test</text>
-<path class="edge" d="M240 70 H250" marker-end="url(#arrow)"/>
-<path class="edge" d="M450 70 H460" marker-end="url(#arrow)"/>
-<path class="edge" d="M560 100 V150" marker-end="url(#arrow)"/>
-<text class="label" x="568" y="125">writes files</text>
-<path class="edge" d="M450 180 H460" marker-end="url(#arrow)"/>
-<path class="edge" d="M240 180 H250" marker-end="url(#arrow)"/>
-<path class="edge revise" d="M140 150 V100" marker-end="url(#arrow)"/>
-<text class="label revise" x="148" y="125">fix, up to 2</text>
-<path class="edge" d="M350 150 V100" marker-end="url(#arrow)"/>
-<text class="label" x="358" y="125">accept: next step</text>
-<path class="edge" d="M350 210 V260" marker-end="url(#arrow)"/>
-<text class="label" x="358" y="235">last step done</text>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#d2ddd6"/></marker></defs>
-<circle class="token" r="7" cx="0" cy="0"/>
-<text class="sub" x="40" y="324">One step at a time. Two revisions, then the Planner; one re-plan, then a human.</text>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#d2ddd6"/></marker><marker id="arrow-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#b4632c"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5d6f66"/></marker></defs>
+<rect width="940" height="444" fill="#f5f8f6"/>
+<text class="section" x="24" y="28">LANGGRAPH — src/pipeline_agents/graph/build.py</text>
+<text class="section" x="794" y="290">BENCHMARK WRAPPER</text>
+<rect class="box plain" x="24" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="36" y="82">init</text>
+<text class="sub" x="36" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">profile + run memory</text>
+<rect class="box model" x="178" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="190" y="82">plan</text>
+<text class="sub" x="190" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">Planner → Plan</text>
+<rect class="box model" x="332" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="344" y="82">execute</text>
+<text class="sub" x="344" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">Executor → script</text>
+<rect class="box plain" x="486" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="498" y="82">validate</text>
+<text class="sub" x="498" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">deterministic tools</text>
+<rect class="box model" x="640" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="652" y="82">critic</text>
+<text class="sub" x="652" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">Critic → Verdict</text>
+<rect class="box plain" x="794" y="58" width="122" height="60" rx="9"/>
+<text class="name" x="806" y="82">advance</text>
+<text class="sub" x="806" y="101" textLength="98" lengthAdjust="spacingAndGlyphs">accept step</text>
+<rect class="box plain" x="640" y="190" width="122" height="60" rx="9"/>
+<text class="name" x="652" y="214">deliver</text>
+<text class="sub" x="652" y="233" textLength="98" lengthAdjust="spacingAndGlyphs">assemble + clean run</text>
+<rect class="box success" x="794" y="190" width="122" height="60" rx="9"/>
+<text class="name" x="806" y="214">END</text>
+<text class="sub" x="806" y="233" textLength="98" lengthAdjust="spacingAndGlyphs">status: succeeded</text>
+<rect class="box model" x="332" y="306" width="122" height="60" rx="9"/>
+<text class="name" x="344" y="330">revise</text>
+<text class="sub" x="344" y="349" textLength="98" lengthAdjust="spacingAndGlyphs">Reviser → Revision</text>
+<rect class="box warn" x="640" y="306" width="122" height="60" rx="9"/>
+<text class="name" x="652" y="330">human</text>
+<text class="sub" x="652" y="349" textLength="98" lengthAdjust="spacingAndGlyphs">needs_human</text>
+<rect class="box outer" x="794" y="306" width="122" height="60" rx="9"/>
+<text class="name" x="806" y="330">checker</text>
+<text class="sub" x="806" y="349" textLength="98" lengthAdjust="spacingAndGlyphs">hidden holdout</text>
+<path class="edge" d="M146 88 H178"/>
+<path class="edge" d="M300 88 H332"/>
+<path class="edge" d="M454 88 H486"/>
+<path class="edge" d="M608 88 H640"/>
+<path class="edge" d="M762 88 H794"/>
+<text class="label" x="766" y="79">accept</text>
+<path class="edge" d="M855 118 V150 H393 V118"/>
+<text class="label" x="564" y="143">next step</text>
+<path class="edge" d="M855 118 V220 H762"/>
+<text class="label" x="789" y="174">plan complete</text>
+<path class="edge" d="M762 220 H794"/>
+<text class="label" x="766" y="211">checks pass</text>
+<path class="edge outer" d="M855 250 V306"/>
+<text class="label" x="803" y="271">benchmark runs only</text>
+<path class="edge loop" d="M393 118 V306"/>
+<text class="label loop" x="399" y="212">script crash</text>
+<path class="edge loop" d="M701 118 V150 H454 V306"/>
+<text class="label loop" x="533" y="172">revise / escalate</text>
+<path class="edge loop" d="M721 118 V306"/>
+<text class="label loop" x="726" y="172">low confidence</text>
+<path class="edge loop" d="M640 220 H547 V336 H454"/>
+<text class="label loop" x="513" y="326">delivery fails</text>
+<path class="edge loop" d="M393 306 V250 H300 V118"/>
+<text class="label loop" x="210" y="229">escalate → re-plan</text>
+<path class="edge loop" d="M332 336 H270 V150 H393 V118"/>
+<text class="label loop" x="275" y="325">fix</text>
+<path class="edge loop" d="M454 336 H640"/>
+<text class="label loop" x="508" y="327">re-plans used</text>
+<path class="edge outer" d="M762 336 H794"/>
+<circle class="token" r="6" cx="0" cy="0"/>
+<text class="sub" x="24" y="402">Green fills call a model; a green outline marks success. Plain nodes are deterministic. Orange paths recover or stop.</text>
+<text class="sub" x="24" y="424">Every graph node checkpoints RunState to SQLite; the Observer wraps each model call. The hidden checker never enters the agent workspace.</text>
 </svg>
