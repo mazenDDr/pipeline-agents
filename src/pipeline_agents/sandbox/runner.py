@@ -24,6 +24,7 @@ failure (retry or stop, but never charge a revision); a traceback or any other n
 says so in every result.
 """
 
+import functools
 import os
 import shutil
 import signal
@@ -172,8 +173,28 @@ class LinuxSandbox:
         self.staging = staging
 
     @staticmethod
+    @functools.lru_cache(maxsize=1)
     def available() -> bool:
-        return sys.platform == "linux" and all(shutil.which(t) for t in ("systemd-run", "unshare", "prlimit"))
+        """Linux, the three tools, and a kernel that actually grants a user namespace.
+
+        The tools can all be present while the host still refuses to map uids, which is the case
+        inside many containers and on GitHub-hosted runners. Probing once is cheaper than letting
+        every step fail as an infra error.
+        """
+        if sys.platform != "linux":
+            return False
+        if not all(shutil.which(tool) for tool in ("systemd-run", "unshare", "prlimit")):
+            return False
+        try:
+            probe = subprocess.run(
+                ["unshare", "--user", "--map-root-user", "true"],
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return False
+        return probe.returncode == 0
 
     def run(self, workdir: Path, argv: list[str]) -> RunResult:
         unit = f"pa-sandbox-{uuid.uuid4().hex[:12]}"
