@@ -2,6 +2,9 @@
 name = "pipeline-agents"
 version = "0.1.0"
 description = "A multi-agent system (planner, executor, critic, reviser) that builds data pipelines, with a measured model harness: prompt registry, memory, budgets and an observer"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11,<3.13"
 dependencies = [
   "pydantic>=2.7",
