@@ -141,3 +141,7 @@ Let the Reviser reopen the step that owns the broken file; compare that with a w
 LangGraph · Pydantic · pandas · scikit-learn · SQLite · Jinja2 · sentence-transformers · llama.cpp · Streamlit
 
 Benchmark datasets come from the [UCI Machine Learning Repository](docs/benchmark.md#data), with attribution and dataset links in the benchmark report. Local model selection and dated shadow prices are documented in [the model report](docs/model_choice.md).
+
+## License
+
+Released under the [MIT License](LICENSE).
