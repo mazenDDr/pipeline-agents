@@ -1,20 +1,24 @@
 .PHONY: setup check lint fmt test app
 
+# Tools come from the local virtualenv. CI installs into the job's own
+# environment and overrides this with an empty value: make check BIN=
+BIN ?= .venv/bin/
+
 setup:
 	/opt/homebrew/Caskroom/miniconda/base/envs/main/bin/python3.11 -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
 
 check: lint test
 
 lint:
-	.venv/bin/ruff check .
-	.venv/bin/ruff format --check .
+	$(BIN)ruff check .
+	$(BIN)ruff format --check .
 
 fmt:
-	.venv/bin/ruff format .
-	.venv/bin/ruff check --fix .
+	$(BIN)ruff format .
+	$(BIN)ruff check --fix .
 
 test:
-	.venv/bin/pytest -q
+	$(BIN)pytest -q
 
 app:
-	PIPELINE_MODEL_HOST=$${PIPELINE_MODEL_HOST:-127.0.0.1} .venv/bin/streamlit run src/pipeline_agents/app/streamlit_app.py
+	PIPELINE_MODEL_HOST=$${PIPELINE_MODEL_HOST:-127.0.0.1} $(BIN)streamlit run src/pipeline_agents/app/streamlit_app.py
